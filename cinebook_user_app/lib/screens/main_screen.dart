@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cinebook_core/cinebook_core.dart';
 import 'home_screen.dart';
 import 'history_screen.dart';
+import 'agent_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,7 +16,7 @@ class _MainScreenState extends State<MainScreen> {
   
   final _pages = [
     const HomeScreen(),
-    const Center(child: Text('AI Chatbot Placeholder (Phase 4)')),
+    const AgentScreen(),
   ];
 
   @override
