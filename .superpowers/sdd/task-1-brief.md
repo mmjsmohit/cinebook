@@ -1,401 +1,131 @@
-### Task 1: Create the shared theme files in cinebook_core
+### Task 1: Create SeatGeek-inspired Reusable Widgets
 
 **Files:**
-- Create: `cinebook_core/lib/src/theme/cinema_colors.dart`
-- Create: `cinebook_core/lib/src/theme/cinema_theme_extension.dart`
-- Create: `cinebook_core/lib/src/theme/cinema_theme.dart`
-- Modify: `cinebook_core/pubspec.yaml`
-- Modify: `cinebook_core/lib/cinebook_core.dart`
+- Create: `/Users/mohittiwari/Dev/Cinebook/cinebook_user_app/lib/widgets/featured_movie_card.dart`
+- Create: `/Users/mohittiwari/Dev/Cinebook/cinebook_user_app/lib/widgets/category_list_widget.dart`
 
 **Interfaces:**
-- Consumes: nothing (foundational task)
-- Produces: `CinemaColors` (static color constants), `CinemaThemeExtension` (custom ThemeExtension with `neonGlow`, `seatAvailable`, `seatSelected`, `seatSold`, `structuralBorder`), `CinemaTheme.darkTheme` (fully configured `ThemeData`)
+- Produces: `FeaturedMovieCard(movie: Map<String, dynamic>)`
+- Produces: `CategoryListWidget(title: String, items: List<dynamic>, onSelect: (item) {})`
 
-- [ ] **Step 1: Add google_fonts dependency to cinebook_core**
-
-In `cinebook_core/pubspec.yaml`, add `google_fonts` under `dependencies`:
-
-```yaml
-dependencies:
-  dio: ^5.10.0
-  flutter:
-    sdk: flutter
-  flutter_bloc: ^9.1.1
-  flutter_secure_storage: ^10.3.1
-  google_fonts: ^6.2.0
-```
-
-- [ ] **Step 2: Run pub get to install the dependency**
-
-Run: `cd cinebook_core && flutter pub get`
-Expected: "Got dependencies!" with no errors.
-
-- [ ] **Step 3: Create cinema_colors.dart**
-
-Create `cinebook_core/lib/src/theme/cinema_colors.dart`:
+- [ ] **Step 1: Write `featured_movie_card.dart`**
+Create a large, visually striking card (similar to the Lakers at Warriors ref).
 
 ```dart
 import 'package:flutter/material.dart';
+import 'package:cinebook_core/cinebook_core.dart';
+import '../screens/movie_detail_screen.dart';
 
-/// CineBook design system color palette.
-///
-/// All hex values are sourced from DESIGN.md and must not be overridden
-/// in consumer apps. Use [CinemaThemeExtension] for semantic aliases.
-class CinemaColors {
-  CinemaColors._();
+class FeaturedMovieCard extends StatelessWidget {
+  final Map<String, dynamic> movie;
+  const FeaturedMovieCard({super.key, required this.movie});
 
-  // ── Brand Accents ──────────────────────────────────────────────
-  static const Color neonRed      = Color(0xFFFF2E51);
-  static const Color neonRedDeep  = Color(0xFFE01B3C);
-  static const Color warmAmber    = Color(0xFFFF9F0A);
-  static const Color successGreen = Color(0xFF30D158);
-
-  // ── Neutrals ──────────────────────────────────────────────────
-  static const Color deepCharcoal    = Color(0xFF0B0C0E);
-  static const Color inkCharcoal     = Color(0xFF16181C);
-  static const Color steelGray       = Color(0xFF8E939E);
-  static const Color structuralBorder = Color(0xFF2C2E35);
-  static const Color offWhite        = Color(0xFFF5F6F8);
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(
+          builder: (_) => MovieDetailScreen(movieId: movie['id']),
+        ));
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        height: 220,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          image: DecorationImage(
+            image: NetworkImage(movie['posterUrl'] ?? 'https://via.placeholder.com/400'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.4), BlendMode.darken),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(color: CinemaColors.neonRed, borderRadius: BorderRadius.circular(4)),
+                child: Text('FEATURED', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+              const Spacer(),
+              Text(movie['title'] ?? 'Unknown', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text((movie['genres'] as List?)?.map((g) => g['name']).join(', ') ?? '', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 ```
 
-- [ ] **Step 4: Create cinema_theme_extension.dart**
-
-Create `cinebook_core/lib/src/theme/cinema_theme_extension.dart`:
-
-```dart
-import 'package:flutter/material.dart';
-import 'cinema_colors.dart';
-
-/// Custom theme properties outside standard Material roles.
-///
-/// Access via `Theme.of(context).extension<CinemaThemeExtension>()`.
-class CinemaThemeExtension extends ThemeExtension<CinemaThemeExtension> {
-  final List<BoxShadow>? neonGlow;
-  final Color? seatAvailable;
-  final Color? seatSelected;
-  final Color? seatSold;
-  final Color? structuralBorder;
-
-  const CinemaThemeExtension({
-    required this.neonGlow,
-    required this.seatAvailable,
-    required this.seatSelected,
-    required this.seatSold,
-    required this.structuralBorder,
-  });
-
-  @override
-  CinemaThemeExtension copyWith({
-    List<BoxShadow>? neonGlow,
-    Color? seatAvailable,
-    Color? seatSelected,
-    Color? seatSold,
-    Color? structuralBorder,
-  }) {
-    return CinemaThemeExtension(
-      neonGlow: neonGlow ?? this.neonGlow,
-      seatAvailable: seatAvailable ?? this.seatAvailable,
-      seatSelected: seatSelected ?? this.seatSelected,
-      seatSold: seatSold ?? this.seatSold,
-      structuralBorder: structuralBorder ?? this.structuralBorder,
-    );
-  }
-
-  @override
-  CinemaThemeExtension lerp(
-    covariant ThemeExtension<CinemaThemeExtension>? other,
-    double t,
-  ) {
-    if (other is! CinemaThemeExtension) return this;
-    return CinemaThemeExtension(
-      neonGlow: BoxShadow.lerpList(neonGlow, other.neonGlow, t),
-      seatAvailable: Color.lerp(seatAvailable, other.seatAvailable, t),
-      seatSelected: Color.lerp(seatSelected, other.seatSelected, t),
-      seatSold: Color.lerp(seatSold, other.seatSold, t),
-      structuralBorder: Color.lerp(structuralBorder, other.structuralBorder, t),
-    );
-  }
-
-  /// Pre-configured dark-mode instance.
-  static const CinemaThemeExtension dark = CinemaThemeExtension(
-    neonGlow: [
-      BoxShadow(
-        color: Color(0x66FF2E51),
-        blurRadius: 12,
-        spreadRadius: 2,
-      ),
-    ],
-    seatAvailable: CinemaColors.successGreen,
-    seatSelected: CinemaColors.neonRed,
-    seatSold: CinemaColors.structuralBorder,
-    structuralBorder: CinemaColors.structuralBorder,
-  );
-}
-```
-
-- [ ] **Step 5: Create cinema_theme.dart**
-
-Create `cinebook_core/lib/src/theme/cinema_theme.dart`:
+- [ ] **Step 2: Write `category_list_widget.dart`**
+Create a horizontal scrolling list for categories (genres/languages).
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'cinema_colors.dart';
-import 'cinema_theme_extension.dart';
+import 'package:cinebook_core/cinebook_core.dart';
 
-/// Canonical CineBook theme. Both consumer apps use [darkTheme].
-class CinemaTheme {
-  CinemaTheme._();
+class CategoryListWidget extends StatelessWidget {
+  final String title;
+  final List<dynamic> items;
+  final Function(dynamic) onSelect;
 
-  static ThemeData get darkTheme {
-    final base = ThemeData.dark(useMaterial3: true);
+  const CategoryListWidget({super.key, required this.title, required this.items, required this.onSelect});
 
-    return base.copyWith(
-      scaffoldBackgroundColor: CinemaColors.deepCharcoal,
-
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: CinemaColors.neonRed,
-        primary: CinemaColors.neonRed,
-        secondary: CinemaColors.warmAmber,
-        surface: CinemaColors.inkCharcoal,
-        onSurface: CinemaColors.offWhite,
-        brightness: Brightness.dark,
-      ),
-
-      textTheme: _buildTextTheme(base.textTheme),
-
-      appBarTheme: AppBarTheme(
-        backgroundColor: CinemaColors.deepCharcoal,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
-        titleTextStyle: GoogleFonts.inter(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: CinemaColors.offWhite,
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         ),
-        iconTheme: const IconThemeData(color: CinemaColors.offWhite),
-      ),
-
-      cardTheme: const CardThemeData(
-        color: CinemaColors.inkCharcoal,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: CinemaColors.structuralBorder),
-          borderRadius: BorderRadius.all(Radius.circular(16)),
-        ),
-      ),
-
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: CinemaColors.neonRed,
-          foregroundColor: CinemaColors.offWhite,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-          ),
-          textStyle: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+        SizedBox(
+          height: 100,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return GestureDetector(
+                onTap: () => onSelect(item),
+                child: Container(
+                  width: 140,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.bottomLeft,
+                  padding: const EdgeInsets.all(12),
+                  child: Text(item['name'] ?? 'Unknown', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                ),
+              );
+            },
           ),
         ),
-      ),
-
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: CinemaColors.neonRed,
-          textStyle: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: CinemaColors.neonRed,
-          foregroundColor: CinemaColors.offWhite,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-          ),
-        ),
-      ),
-
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: CinemaColors.inkCharcoal,
-        labelStyle: GoogleFonts.inter(color: CinemaColors.steelGray),
-        hintStyle: GoogleFonts.inter(color: CinemaColors.steelGray),
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: CinemaColors.structuralBorder),
-        ),
-        enabledBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: CinemaColors.structuralBorder),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: CinemaColors.neonRed, width: 2),
-        ),
-      ),
-
-      dividerTheme: const DividerThemeData(
-        color: CinemaColors.structuralBorder,
-        thickness: 1,
-      ),
-
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: CinemaColors.inkCharcoal,
-        contentTextStyle: GoogleFonts.inter(color: CinemaColors.offWhite),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          side: BorderSide(color: CinemaColors.structuralBorder),
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
-
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: CinemaColors.deepCharcoal,
-        indicatorColor: CinemaColors.neonRed.withValues(alpha: 0.15),
-        iconTheme: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: CinemaColors.neonRed);
-          }
-          return const IconThemeData(color: CinemaColors.steelGray);
-        }),
-        labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: CinemaColors.neonRed,
-            );
-          }
-          return GoogleFonts.inter(
-            fontSize: 12,
-            color: CinemaColors.steelGray,
-          );
-        }),
-      ),
-
-      dialogTheme: const DialogThemeData(
-        backgroundColor: CinemaColors.inkCharcoal,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
-          side: BorderSide(color: CinemaColors.structuralBorder),
-        ),
-      ),
-
-      drawerTheme: const DrawerThemeData(
-        backgroundColor: CinemaColors.deepCharcoal,
-      ),
-
-      chipTheme: ChipThemeData(
-        backgroundColor: CinemaColors.inkCharcoal,
-        selectedColor: CinemaColors.neonRed,
-        side: const BorderSide(color: CinemaColors.structuralBorder),
-        labelStyle: GoogleFonts.inter(color: CinemaColors.offWhite),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-        ),
-      ),
-
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: CinemaColors.neonRed,
-      ),
-
-      extensions: <ThemeExtension<dynamic>>[
-        CinemaThemeExtension.dark,
       ],
     );
   }
-
-  static TextTheme _buildTextTheme(TextTheme base) {
-    return GoogleFonts.interTextTheme(base).copyWith(
-      displayLarge: GoogleFonts.inter(
-        fontSize: 48,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -0.5,
-        color: CinemaColors.offWhite,
-      ),
-      displayMedium: GoogleFonts.inter(
-        fontSize: 36,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -0.5,
-        color: CinemaColors.offWhite,
-      ),
-      headlineLarge: GoogleFonts.inter(
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-        color: CinemaColors.offWhite,
-      ),
-      headlineMedium: GoogleFonts.inter(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-        color: CinemaColors.offWhite,
-      ),
-      titleLarge: GoogleFonts.inter(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: CinemaColors.offWhite,
-      ),
-      titleMedium: GoogleFonts.inter(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: CinemaColors.offWhite,
-      ),
-      bodyLarge: GoogleFonts.inter(
-        fontSize: 16,
-        fontWeight: FontWeight.normal,
-        color: CinemaColors.offWhite,
-      ),
-      bodyMedium: GoogleFonts.inter(
-        fontSize: 14,
-        color: CinemaColors.steelGray,
-      ),
-      bodySmall: GoogleFonts.inter(
-        fontSize: 12,
-        color: CinemaColors.steelGray,
-      ),
-      labelLarge: GoogleFonts.inter(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: CinemaColors.offWhite,
-      ),
-      labelSmall: GoogleFonts.inter(
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.5,
-        color: CinemaColors.steelGray,
-      ),
-    );
-  }
 }
 ```
 
-- [ ] **Step 6: Export theme files in cinebook_core barrel**
-
-Modify `cinebook_core/lib/cinebook_core.dart` — append these three lines:
-
-```dart
-export 'src/theme/cinema_colors.dart';
-export 'src/theme/cinema_theme_extension.dart';
-export 'src/theme/cinema_theme.dart';
-```
-
-- [ ] **Step 7: Verify the shared package compiles**
-
-Run: `cd cinebook_core && flutter analyze`
+- [ ] **Step 3: Verify static analysis**
+Run: `flutter analyze`
 Expected: "No issues found!"
 
-- [ ] **Step 8: Commit**
-
+- [ ] **Step 4: Commit**
 ```bash
-git add cinebook_core/
-git commit -m "feat(core): add CinemaTheme design system with colors, extensions, and ThemeData"
+git add cinebook_user_app/lib/widgets/
+git commit -m "feat: add FeaturedMovieCard and CategoryListWidget components"
 ```
 
 ---

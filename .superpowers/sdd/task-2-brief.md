@@ -1,74 +1,114 @@
-### Task 2: Wire CinemaTheme into both Flutter apps
+### Task 2: Refactor Home Screen to Consume New APIs
 
 **Files:**
-- Modify: `cinebook_user_app/lib/main.dart:30-37`
-- Modify: `cinebook_hall_app/lib/main.dart:29-36`
-- Modify: `cinebook_user_app/pubspec.yaml` (may need `flutter pub get`)
-- Modify: `cinebook_hall_app/pubspec.yaml` (may need `flutter pub get`)
+- Modify: `/Users/mohittiwari/Dev/Cinebook/cinebook_user_app/lib/screens/home_screen.dart`
 
 **Interfaces:**
-- Consumes: `CinemaTheme.darkTheme` from `cinebook_core`
-- Produces: both apps render with the new dark theme; all default Material components inherit the cinema styling automatically
+- Consumes: `FeaturedMovieCard`, `CategoryListWidget`
 
-- [ ] **Step 1: Run pub get in both apps to pick up cinebook_core changes**
-
-Run: `cd cinebook_user_app && flutter pub get && cd ../cinebook_hall_app && flutter pub get`
-Expected: "Got dependencies!" for both.
-
-- [ ] **Step 2: Replace the user app's ThemeData**
-
-In `cinebook_user_app/lib/main.dart`, replace lines 32–37:
+- [ ] **Step 1: Update API calls in `home_screen.dart`**
+Replace the single `/movies` call with parallel calls for trending, upcoming, genres, and languages. Also import the new widgets.
 
 ```dart
-      // BEFORE:
-      theme: ThemeData.dark(useMaterial3: true).copyWith(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
-        ),
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cinebook_core/cinebook_core.dart';
+import '../widgets/featured_movie_card.dart';
+import '../widgets/category_list_widget.dart';
+import 'movie_detail_screen.dart';
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<dynamic> _trendingMovies = [];
+  List<dynamic> _upcomingMovies = [];
+  List<dynamic> _genres = [];
+  List<dynamic> _languages = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDashboardData();
+  }
+
+  Future<void> _fetchDashboardData() async {
+    try {
+      final api = context.read<ApiClient>();
+      final results = await Future.wait([
+        api.dio.get('/movies/trending'),
+        api.dio.get('/movies/upcoming?date=${DateTime.now().toIso8601String().split('T')[0]}'),
+        api.dio.get('/genres'),
+        api.dio.get('/languages'),
+      ]);
+      setState(() {
+        _trendingMovies = results[0].data['movies'];
+        _upcomingMovies = results[1].data['movies'];
+        _genres = results[2].data['genres'];
+        _languages = results[3].data['languages'];
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
+    return RefreshIndicator(
+      onRefresh: _fetchDashboardData,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        children: [
+          if (_trendingMovies.isNotEmpty) FeaturedMovieCard(movie: _trendingMovies.first),
+          const SizedBox(height: 16),
+          CategoryListWidget(
+            title: 'Browse by Genre',
+            items: _genres,
+            onSelect: (g) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected ${g['name']}')),
+          ),
+          const SizedBox(height: 16),
+          CategoryListWidget(
+            title: 'Languages',
+            items: _languages,
+            onSelect: (l) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected ${l['name']}')),
+          ),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text('Upcoming Releases', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          ),
+          ..._upcomingMovies.map((movie) => ListTile(
+            leading: movie['posterUrl'] != null 
+                ? Image.network(movie['posterUrl'], width: 50, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.movie, size: 50, color: CinemaColors.steelGray))
+                : const Icon(Icons.movie, size: 50, color: CinemaColors.steelGray),
+            title: Text(movie['title'] ?? 'Unknown', style: Theme.of(context).textTheme.titleMedium),
+            subtitle: Text((movie['genres'] as List?)?.map((g) => g['name']).join(', ') ?? ''),
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => MovieDetailScreen(movieId: movie['id'])));
+            },
+          )),
+        ],
       ),
+    );
+  }
+}
 ```
 
-with:
+- [ ] **Step 2: Verify static analysis**
+Run: `flutter analyze`
+Expected: "No issues found!"
 
-```dart
-      theme: CinemaTheme.darkTheme,
-```
-
-The import `package:cinebook_core/cinebook_core.dart` is already present on line 3.
-
-- [ ] **Step 3: Replace the hall app's ThemeData**
-
-In `cinebook_hall_app/lib/main.dart`, replace lines 31–35:
-
-```dart
-      // BEFORE:
-      theme: ThemeData.dark(useMaterial3: true).copyWith(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepOrange,
-          brightness: Brightness.dark,
-        ),
-      ),
-```
-
-with:
-
-```dart
-      theme: CinemaTheme.darkTheme,
-```
-
-The import `package:cinebook_core/cinebook_core.dart` is already present on line 3.
-
-- [ ] **Step 4: Verify both apps analyze cleanly**
-
-Run: `cd cinebook_user_app && flutter analyze && cd ../cinebook_hall_app && flutter analyze`
-Expected: "No issues found!" for both.
-
-- [ ] **Step 5: Commit**
-
+- [ ] **Step 3: Commit**
 ```bash
-git add cinebook_user_app/lib/main.dart cinebook_hall_app/lib/main.dart
-git commit -m "feat(apps): wire CinemaTheme.darkTheme into both Flutter apps"
+git add cinebook_user_app/lib/screens/home_screen.dart
+git commit -m "feat: revamp home screen with trending, upcoming, genres, and languages"
 ```
 
 ---
