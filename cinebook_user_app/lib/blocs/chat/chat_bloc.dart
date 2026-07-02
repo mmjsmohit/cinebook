@@ -191,6 +191,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         }
       }
       
+      if (controller.currentlyStreamingMessageId != null) {
+        controller.stopStreamingMessage(controller.currentlyStreamingMessageId!);
+      }
+      
       emit(state.copyWith(isLoading: false, threadId: event.threadId));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: 'Failed to load thread'));
