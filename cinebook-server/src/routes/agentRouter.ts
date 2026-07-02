@@ -2,8 +2,33 @@
 import { Router } from 'express';
 import { runAgent } from '../agent/orchestrator.js';
 import { requireAuth } from '../middlewares/authMiddleware.js';
+import { getConversationsForUser, getConversationWithMessages } from '../agent/conversationService.js';
 
 const router = Router();
+
+router.get('/:agentId/threads', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const threads = await getConversationsForUser(userId);
+    res.json(threads);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/:agentId/threads/:threadId', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const thread = await getConversationWithMessages(req.params.threadId, userId);
+    if (!thread) {
+      res.status(404).json({ error: 'Thread not found' });
+      return;
+    }
+    res.json(thread);
+  } catch (err) {
+    next(err);
+  }
+});
 
 /**
  * POST /api/agents/:agentId/run
