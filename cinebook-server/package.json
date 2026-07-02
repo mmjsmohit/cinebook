@@ -9,14 +9,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "redis": "^6.1.0",
-    "z": "^1.0.9",
     "zod": "^4.4.3"
   },
   "prisma": {
