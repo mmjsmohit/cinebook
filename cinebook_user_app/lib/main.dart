@@ -12,6 +12,7 @@ void main() {
     MultiRepositoryProvider(
       providers: [
         RepositoryProvider.value(value: apiClient),
+        RepositoryProvider.value(value: tokenStorage),
       ],
       child: BlocProvider(
         create: (_) => AuthBloc(tokenStorage: tokenStorage)..add(AuthStarted()),

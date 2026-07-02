@@ -46,8 +46,8 @@ app.use('/bookings', bookingsRouter);
 app.use('/payments', paymentsRouter);
 app.use('/promo', promoRouter);
 
-// AI Agent
-app.use('/api/agent', agentRouter);
+// AI Agent (matches standard AG-UI path: /agents/:agentId/run)
+app.use('/api/agents', agentRouter);
 
 // /me sub-routes
 app.use('/me/bookings', myBookingsRouter);
