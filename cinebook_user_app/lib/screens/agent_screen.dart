@@ -32,12 +32,18 @@ class _AgentScreenState extends State<AgentScreen> {
     super.dispose();
   }
 
-  void _showConfirmationDialog(BuildContext context, ChatBloc bloc, Map<String, dynamic> data) {
+  void _showConfirmationDialog(
+    BuildContext context,
+    ChatBloc bloc,
+    Map<String, dynamic> data,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirm Booking'),
-        content: Text('Do you want to confirm the booking for ${data['movieTitle']}? Total: \$${data['totalPrice']}'),
+        content: Text(
+          'Do you want to confirm the booking for ${data['movieTitle']}? Total: \$${data['totalPrice']}',
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -61,48 +67,56 @@ class _AgentScreenState extends State<AgentScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (ctx) => ChatBloc(
-        apiClient: ctx.read<ApiClient>(),
-        controller: _controller,
-      ),
-      child: BlocBuilder<ChatBloc, ChatState>(
-        builder: (context, state) {
-          final bloc = context.read<ChatBloc>();
-          
-          return AiChatWidget(
-            currentUser: _currentUser,
-            aiUser: _aiUser,
-            controller: _controller,
-            onSendMessage: (msg) => bloc.add(ChatSendMessage(msg.text)),
-            onCancelGenerating: () => bloc.add(ChatCancelMessage()),
-            loadingConfig: LoadingConfig(isLoading: state.isLoading),
-            enableMarkdownStreaming: true,
-            streamingWordByWord: true,
-            streamingDuration: const Duration(milliseconds: 30),
-            resultRenderers: {
-              'movieList': (ctx, data) => _buildMovieList(data),
-              'movieCard': (ctx, data) => _buildMovieCard(data),
-              'showtimes': (ctx, data) => _buildShowtimes(data),
-              'seatMap': (ctx, data) => _buildSeatMapPreview(data),
-              'bookingSummary': (ctx, data) {
-                // When we get a booking summary, we might want to prompt for confirmation
-                // We'll show the summary and add a confirm button
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildBookingSummary(data),
-                    const SizedBox(height: 8),
-                    FilledButton(
-                      onPressed: () => _showConfirmationDialog(context, bloc, data),
-                      child: const Text('Confirm Booking'),
-                    )
-                  ],
-                );
-              },
-              'paymentResult': (ctx, data) => _buildPaymentResult(data),
-            },
-          );
+      create: (ctx) =>
+          ChatBloc(apiClient: ctx.read<ApiClient>(), controller: _controller),
+      child: BlocListener<ChatBloc, ChatState>(
+        listenWhen: (previous, current) =>
+            previous.error != current.error && current.error != null,
+        listener: (context, state) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.error!)));
         },
+        child: BlocBuilder<ChatBloc, ChatState>(
+          builder: (context, state) {
+            final bloc = context.read<ChatBloc>();
+
+            return AiChatWidget(
+              currentUser: _currentUser,
+              aiUser: _aiUser,
+              controller: _controller,
+              onSendMessage: (msg) => bloc.add(ChatSendMessage(msg.text)),
+              onCancelGenerating: () => bloc.add(ChatCancelMessage()),
+              loadingConfig: LoadingConfig(isLoading: state.isLoading),
+              enableMarkdownStreaming: true,
+              streamingWordByWord: true,
+              streamingDuration: const Duration(milliseconds: 30),
+              resultRenderers: {
+                'movieList': (ctx, data) => _buildMovieList(data),
+                'movieCard': (ctx, data) => _buildMovieCard(data),
+                'showtimes': (ctx, data) => _buildShowtimes(data),
+                'seatMap': (ctx, data) => _buildSeatMapPreview(data),
+                'bookingSummary': (ctx, data) {
+                  // When we get a booking summary, we might want to prompt for confirmation
+                  // We'll show the summary and add a confirm button
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildBookingSummary(data),
+                      const SizedBox(height: 8),
+                      FilledButton(
+                        onPressed: () =>
+                            _showConfirmationDialog(context, bloc, data),
+                        child: const Text('Confirm Booking'),
+                      ),
+                    ],
+                  );
+                },
+                'paymentResult': (ctx, data) => _buildPaymentResult(data),
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -110,7 +124,7 @@ class _AgentScreenState extends State<AgentScreen> {
   Widget _buildMovieList(Map<String, dynamic> data) {
     final movies = data['movies'] as List<dynamic>? ?? [];
     if (movies.isEmpty) return const Text('No movies found.');
-    
+
     return SizedBox(
       height: 180,
       child: ListView.builder(
@@ -127,13 +141,32 @@ class _AgentScreenState extends State<AgentScreen> {
                 Expanded(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: movie['posterUrl'] != null 
-                      ? Image.network(movie['posterUrl'], fit: BoxFit.cover, width: double.infinity)
-                      : Container(color: Colors.grey[800], child: const Icon(Icons.movie)),
+                    child: movie['posterUrl'] != null
+                        ? Image.network(
+                            movie['posterUrl'],
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: Colors.grey[800],
+                              child: const Icon(Icons.movie, color: Colors.white54),
+                            ),
+                          )
+                        : Container(
+                            color: Colors.grey[800],
+                            child: const Icon(Icons.movie, color: Colors.white54),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(movie['title'] ?? 'Unknown', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                Text(
+                  movie['title'] ?? 'Unknown',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           );
@@ -151,18 +184,45 @@ class _AgentScreenState extends State<AgentScreen> {
             if (data['posterUrl'] != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: Image.network(data['posterUrl'], width: 60, height: 90, fit: BoxFit.cover),
+                child: Image.network(
+                  data['posterUrl'],
+                  width: 60,
+                  height: 90,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 60,
+                    height: 90,
+                    color: Colors.grey[800],
+                    child: const Icon(Icons.movie, color: Colors.white54),
+                  ),
+                ),
               )
             else
-              const Icon(Icons.movie, size: 60),
+              Container(
+                width: 60,
+                height: 90,
+                color: Colors.grey[800],
+                child: const Icon(Icons.movie, color: Colors.white54),
+              ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(data['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                    data['title'] ?? '',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(data['description'] ?? '', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(
+                    data['description'] ?? '',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                 ],
               ),
             ),
@@ -178,24 +238,34 @@ class _AgentScreenState extends State<AgentScreen> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: showtimes.map<Widget>((s) => Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: InputChip(
-          label: Text('${s['time']} - ${s['screenName'] ?? 'Screen'}'),
-          onPressed: () {},
-        ),
-      )).toList(),
+      children: showtimes
+          .map<Widget>(
+            (s) => Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: InputChip(
+                label: Text('${s['time']} - ${s['screenName'] ?? 'Screen'}'),
+                onPressed: () {},
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 
   Widget _buildSeatMapPreview(Map<String, dynamic> data) {
     return Container(
       padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(border: Border.all(color: Colors.grey), borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Seat Map Preview', style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            'Seat Map Preview',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           const Icon(Icons.event_seat, size: 48, color: Colors.grey),
           Text('Available seats: ${data['availableSeats'] ?? 0}'),
@@ -212,13 +282,24 @@ class _AgentScreenState extends State<AgentScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Booking Summary', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Booking Summary',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const Divider(),
             Text('Movie: ${data['movieTitle']}'),
-            Text('Seats: ${(data['seats'] as List<dynamic>? ?? []).join(', ')}'),
-            Text('Total: \$${data['totalPrice']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Seats: ${(data['seats'] as List<dynamic>? ?? []).join(', ')}',
+            ),
+            Text(
+              'Total: \$${data['totalPrice']}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             if (data['holdExpiresAt'] != null)
-              Text('Hold expires at: ${data['holdExpiresAt']}', style: const TextStyle(color: Colors.orange, fontSize: 12)),
+              Text(
+                'Hold expires at: ${data['holdExpiresAt']}',
+                style: const TextStyle(color: Colors.orange, fontSize: 12),
+              ),
           ],
         ),
       ),
@@ -230,15 +311,25 @@ class _AgentScreenState extends State<AgentScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: success ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+        color: success
+            ? Colors.green.withOpacity(0.1)
+            : Colors.red.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: success ? Colors.green : Colors.red),
       ),
       child: Row(
         children: [
-          Icon(success ? Icons.check_circle : Icons.error, color: success ? Colors.green : Colors.red),
+          Icon(
+            success ? Icons.check_circle : Icons.error,
+            color: success ? Colors.green : Colors.red,
+          ),
           const SizedBox(width: 8),
-          Expanded(child: Text(data['message'] ?? (success ? 'Payment successful' : 'Payment failed'))),
+          Expanded(
+            child: Text(
+              data['message'] ??
+                  (success ? 'Payment successful' : 'Payment failed'),
+            ),
+          ),
         ],
       ),
     );

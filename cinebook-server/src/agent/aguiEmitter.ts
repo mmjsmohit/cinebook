@@ -38,11 +38,11 @@ export function emitRunFinished(res: Response, state: AgentEmitterState): void {
     writeEvent(res, { type: 'TEXT_MESSAGE_END', messageId: state.currentTextMessageId });
     state.currentTextMessageId = null;
   }
-  writeEvent(res, { type: 'RUN_FINISHED', runId: state.runId });
+  writeEvent(res, { type: 'RUN_FINISHED', runId: state.runId, threadId: state.threadId });
 }
 
 export function emitRunError(res: Response, state: AgentEmitterState, message: string): void {
-  writeEvent(res, { type: 'RUN_ERROR', runId: state.runId, message });
+  writeEvent(res, { type: 'RUN_ERROR', runId: state.runId, threadId: state.threadId, message });
 }
 
 export function emitTextDelta(res: Response, state: AgentEmitterState, delta: string): void {
@@ -61,7 +61,7 @@ export function emitTextEnd(res: Response, state: AgentEmitterState): void {
 }
 
 export function emitToolCallStart(res: Response, toolCallId: string, toolName: string): void {
-  writeEvent(res, { type: 'TOOL_CALL_START', toolCallId, toolName });
+  writeEvent(res, { type: 'TOOL_CALL_START', toolCallId, toolCallName: toolName || 'tool' });
 }
 
 export function emitToolCallArgs(res: Response, toolCallId: string, delta: string): void {
@@ -83,7 +83,12 @@ export function emitToolCallResult(
   toolName: string,
   result: unknown
 ): void {
-  writeEvent(res, { type: 'TOOL_CALL_RESULT', toolCallId, toolName, result });
+  writeEvent(res, { 
+    type: 'TOOL_CALL_RESULT', 
+    messageId: toolCallId, 
+    toolCallId, 
+    content: JSON.stringify(result) 
+  });
 
   // Extract booking state fields and emit STATE_SNAPSHOT if anything changed
   const r = result as Record<string, unknown>;

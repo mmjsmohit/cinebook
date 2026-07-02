@@ -21,7 +21,7 @@ export function createProfileTools(userId: string) {
           select: { id: true, name: true, phone: true, prefs: true, role: true, createdAt: true },
         });
         if (!user) throw new Error('User not found');
-        return { renderHint: 'text' as const, user };
+        return JSON.parse(JSON.stringify({ renderHint: 'text' as const, user }));
       }),
     }),
 
@@ -35,7 +35,7 @@ export function createProfileTools(userId: string) {
           data: { prefs: prefs as object },
           select: { id: true, prefs: true },
         });
-        return { renderHint: 'text' as const, updated: true, prefs: updated.prefs };
+        return JSON.parse(JSON.stringify({ renderHint: 'text' as const, updated: true, prefs: updated.prefs }));
       }),
     }),
 
@@ -49,7 +49,7 @@ export function createProfileTools(userId: string) {
         const genre = typeof prefs.genre === 'string' ? prefs.genre : undefined;
         const language = typeof prefs.language === 'string' ? prefs.language : undefined;
         const movies = await searchMovies({ genre, language });
-        return { renderHint: 'movieList' as const, movies: movies.slice(0, 10) };
+        return JSON.parse(JSON.stringify({ renderHint: 'movieList' as const, movies: movies.slice(0, 10) }));
       }),
     }),
 
