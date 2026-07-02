@@ -17,6 +17,7 @@ import showsRouter from './http/shows.js';
 import bookingsRouter, { myBookingsRouter } from './http/bookings.js';
 import paymentsRouter from './http/payments.js';
 import promoRouter from './http/promo.js';
+import agentRouter from './routes/agentRouter.js';
 
 const app = express();
 
@@ -44,6 +45,9 @@ app.use('/screens', screensRouter);
 app.use('/bookings', bookingsRouter);
 app.use('/payments', paymentsRouter);
 app.use('/promo', promoRouter);
+
+// AI Agent
+app.use('/api/agent', agentRouter);
 
 // /me sub-routes
 app.use('/me/bookings', myBookingsRouter);
