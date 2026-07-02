@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cinebook_core/cinebook_core.dart';
+import 'showtimes_screen.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   final String movieId;
@@ -54,6 +55,11 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 Text(_movie?['title'] ?? '', style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 8),
                 Text(_movie?['description'] ?? ''),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ShowtimesScreen(movieId: widget.movieId))),
+                  child: const Text('View Showtimes'),
+                ),
                 const SizedBox(height: 24),
                 Text('Reviews', style: Theme.of(context).textTheme.titleLarge),
                 ..._reviews.map((r) => ListTile(
