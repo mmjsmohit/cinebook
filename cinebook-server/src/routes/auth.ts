@@ -5,6 +5,7 @@ import { redisClient } from '../redis.js';
 import { JWT_SECRET } from '../config.js';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
+import { phoneVerifyRateLimiter } from '../infra/rateLimiter.js';
 
 const router = Router();
 
@@ -21,73 +22,8 @@ const refreshSchema = z.object({
   refreshToken: z.string()
 });
 
-/**
- * Atomically implements a sliding-window rate limiter via a Redis Lua script.
- *
- * The Lua script runs entirely inside Redis, so all operations are atomic:
- *   1. ZREMRANGEBYSCORE  – prune entries outside the current window
- *   2. ZCARD             – count remaining entries (read-only check)
- *   3. ZADD (conditional) – only adds the new entry when count < limit
- *   4. ZRANGE            – fetch the oldest entry for retry-after calculation
- *   5. EXPIRE            – refresh the key TTL
- *
- * Returns: [allowed (0|1), retryAfterMs (number)]
- */
-const RATE_LIMIT_SCRIPT = `
-local key        = KEYS[1]
-local now        = tonumber(ARGV[1])
-local windowMs   = tonumber(ARGV[2])
-local limit      = tonumber(ARGV[3])
-local value      = ARGV[4]
-local windowSecs = tonumber(ARGV[5])
-
-redis.call('ZREMRANGEBYSCORE', key, 0, now - windowMs)
-local count = redis.call('ZCARD', key)
-
-if count >= limit then
-  local oldest = redis.call('ZRANGE', key, 0, 0, 'WITHSCORES')
-  local oldestScore = oldest[2] and tonumber(oldest[2]) or now
-  local retryAfterMs = (oldestScore + windowMs) - now
-  return {0, retryAfterMs}
-end
-
-redis.call('ZADD', key, now, value)
-redis.call('EXPIRE', key, windowSecs)
-return {1, 0}
-`;
-
-const checkRateLimit = async (phone: string) => {
-  const windowMs = 3600 * 1000; // 1 hour
-  const limit = 5;
-  const now = Date.now();
-  const key = `ratelimit:otp:${phone}`;
-  const value = `${now}-${uuidv4()}`;
-
-  const result = await (redisClient as any).eval(
-    RATE_LIMIT_SCRIPT,
-    {
-      keys: [key],
-      arguments: [String(now), String(windowMs), String(limit), value, String(3600)]
-    }
-  ) as [number, number];
-
-  const [allowed, retryAfterMs] = result;
-  if (!allowed) {
-    return { limited: true, retryAfter: Math.ceil(retryAfterMs / 1000) };
-  }
-  return { limited: false, retryAfter: 0 };
-};
-
-router.post('/request-otp', async (req, res) => {
+router.post('/request-otp', phoneVerifyRateLimiter, async (req, res) => {
   const { phone } = requestOtpSchema.parse(req.body);
-
-  const { limited, retryAfter } = await checkRateLimit(phone);
-  if (limited) {
-    res.status(429).json({
-      error: { code: 'TOO_MANY_REQUESTS', message: 'Rate limit exceeded', details: { retryAfter } }
-    });
-    return;
-  }
 
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   console.log(`[SIMULATED OTP] phone=${phone} code=${code}`);

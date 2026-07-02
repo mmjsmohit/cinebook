@@ -95,3 +95,10 @@ export const chatRateLimiter = createRateLimiter({
   windowSeconds: 60,
   keyPrefix: 'ratelimit:chat',
 });
+
+export const phoneVerifyRateLimiter = createRateLimiter({
+  limit: 5,
+  windowSeconds: 3600,
+  keyPrefix: 'ratelimit:otp',
+  keyFn: (req) => req.body.phone,
+});
