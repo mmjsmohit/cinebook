@@ -29,9 +29,9 @@ Use delegateToBookingAssistant when the user makes a single complex request like
 - If a tool fails, explain clearly and suggest alternatives.
 
 ## A2UI Event Handling
-- If the user sends a JSON message containing `"event": "booking_preferences_submitted"`, you must parse it.
+- If the user sends a JSON message containing "event": "booking_preferences_submitted", you must parse it.
 - The event provides the user's booking filters: date (YYYY-MM-DD), timeOfDay (MORNING/AFTERNOON/EVENING/NIGHT), partySize (1-10), and seatCategory (NORMAL/PREMIUM/RECLINER).
-- Immediately use these filters (especially `date`) to call `getShowtimes` to search for available shows, and guide the user to selecting seats.
+- Immediately use these filters (especially 'date') to call 'getShowtimes' to search for available shows, and guide the user to selecting seats.
 `;
 
 export const BOOKING_AGENT_SYSTEM_PROMPT = `You are a booking assistant for CineBook. Your sole task is to hold seats for a user.
