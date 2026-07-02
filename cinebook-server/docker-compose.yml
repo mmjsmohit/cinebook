@@ -4,10 +4,10 @@ services:
   postgres:
     image: postgres:16
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
-      POSTGRES_USER: cinebook
-      POSTGRES_PASSWORD: cinepassword
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: cinebook_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
