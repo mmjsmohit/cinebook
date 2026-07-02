@@ -1,26 +1,27 @@
-# Task 1 Report: SeatGeek-inspired Reusable Widgets
+# Task 1 Report
 
 ## What was implemented
-- Created `FeaturedMovieCard` component that displays a featured movie with a large image and text.
-- Created `CategoryListWidget` component for a horizontally scrolling list of items (e.g., genres).
+- Created the `TheatresScreen` widget in `cinebook_user_app/lib/screens/theatres_screen.dart`.
+- The screen fetches data from the `/theatres` API using `ApiClient` and `dio.get`.
+- Uses a clean, modern list style for displaying the theatres.
+- Uses `CinemaColors` instead of raw Flutter `Colors` class.
+- Adheres to typography using `Theme.of(context).textTheme.*`.
 
 ## What was tested and test results
-- Ran `flutter analyze` which successfully found 0 issues after removing an unused import from `CategoryListWidget`.
-- No automated unit tests were required per task brief, but static analysis passes successfully.
+- Ran `flutter analyze` static analysis successfully on `cinebook_user_app/`.
+- No issues found after fixing one minor lint warning for unnecessary underscores.
 
 ## Files changed
-- Created `cinebook_user_app/lib/widgets/featured_movie_card.dart`
-- Created `cinebook_user_app/lib/widgets/category_list_widget.dart`
+- Added `cinebook_user_app/lib/screens/theatres_screen.dart`
 
 ## Self-review findings
-- The widgets align perfectly with the provided task brief.
-- An unused import warning in `category_list_widget.dart` was identified during initial flutter analyze and has been removed.
-- Components are stateless and decoupled, making them fully reusable as requested.
-- Avoiding overbuilding: Stuck strictly to what was provided in the task brief code.
+- Checked that requirements were exactly met without overbuilding.
+- Validated that `CinemaColors` and dynamic themes are accurately referenced.
+- Ensured we correctly handle states: loading, empty, error, and loaded list of theatres.
 
-## Issues or concerns
-- None. Everything matches the specification and static analysis passes.
+## Any issues or concerns
+- None. The task is fully complete.
 
-## Fix Report
-- Fixed raw color usage in `FeaturedMovieCard` by replacing `Colors.black`, `Colors.white`, and `Colors.white70` with `CinemaColors.deepCharcoal`, `CinemaColors.offWhite`, and `CinemaColors.steelGray` respectively.
-- Ran `flutter analyze` and it passed with 0 issues.
+## Task 1 Issue Fix Report
+- Fixed crash risk in `_fetchTheatres()` by inserting `if (!mounted) return;` immediately after `await` in the `try` block, and also at the start of the `catch` block before calling `setState`.
+- Ran `flutter analyze` and no issues were found.
