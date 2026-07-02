@@ -25,3 +25,24 @@ export async function getRecentActivity(limit = 50) {
     take: limit,
   });
 }
+
+export async function getActivityLog(filters: {
+  actorId?: string;
+  from?: string;
+  to?: string;
+  limit?: number;
+}) {
+  const where: Prisma.AdminActivityLogWhereInput = {};
+  if (filters.actorId) where.actorId = filters.actorId;
+  if (filters.from || filters.to) {
+    where.createdAt = {
+      ...(filters.from ? { gte: new Date(filters.from) } : {}),
+      ...(filters.to ? { lte: new Date(filters.to) } : {}),
+    };
+  }
+  return prisma.adminActivityLog.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    take: filters.limit ?? 100,
+  });
+}
