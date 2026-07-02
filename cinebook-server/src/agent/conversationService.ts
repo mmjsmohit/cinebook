@@ -59,3 +59,21 @@ export async function saveHistory(
   });
   logger.info('conversationService.saved', { conversationId, count: messages.length });
 }
+
+export async function getConversationsForUser(userId: string) {
+  return prisma.conversation.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+export async function getConversationWithMessages(conversationId: string, userId: string) {
+  return prisma.conversation.findFirst({
+    where: { id: conversationId, userId },
+    include: {
+      messages: {
+        orderBy: { createdAt: 'asc' },
+      },
+    },
+  });
+}
