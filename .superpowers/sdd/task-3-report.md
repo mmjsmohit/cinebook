@@ -122,3 +122,19 @@ None — all 124 integration tests pass, TypeScript compiles cleanly, and all Do
 
 ## Report File
 `/Users/mohittiwari/Dev/Cinebook/.superpowers/sdd/task-3-report.md`
+
+---
+
+## Fixes Applied
+
+- Migrated `src/routes/auth.ts` `/request-otp` endpoint to use the shared `phoneVerifyRateLimiter` middleware from `src/infra/rateLimiter.ts`.
+- Updated `src/services/holdService.ts` to use `redisClient.sendCommand(['EVAL', ...])` instead of manually type-casting `redisClient.eval`.
+
+### Verification
+
+Tests re-run via `npm test && npx tsx test-task3.ts`:
+
+```
+✅ All assertions passed! (test-auth.ts)
+Results: 124 passed, 0 failed (test-task3.ts)
+```
