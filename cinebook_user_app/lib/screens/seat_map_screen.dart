@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cinebook_core/cinebook_core.dart';
 import '../blocs/seat_map_bloc.dart';
+import 'payment_screen.dart';
 
 class SeatMapScreen extends StatelessWidget {
   final String showId;
@@ -11,13 +12,14 @@ class SeatMapScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SeatMapBloc(api: context.read<ApiClient>())..add(LoadSeats(showId)),
-      child: const _SeatMapView(),
+      child: _SeatMapView(showId: showId),
     );
   }
 }
 
 class _SeatMapView extends StatefulWidget {
-  const _SeatMapView();
+  final String showId;
+  const _SeatMapView({required this.showId});
   @override
   State<_SeatMapView> createState() => _SeatMapViewState();
 }
@@ -94,7 +96,15 @@ class _SeatMapViewState extends State<_SeatMapView> {
                       Text('${state.heldSeats.length} seats selected'),
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: Navigate to Payment Screen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PaymentScreen(
+                                showId: widget.showId,
+                                seatIds: state.heldSeats.keys.toList().cast<String>(),
+                              ),
+                            ),
+                          );
                         },
                         child: const Text('Book'),
                       ),
