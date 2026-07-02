@@ -9,6 +9,7 @@ environment:
 dependencies:
   cinebook_core:
     path: ../cinebook_core
+  dio: ^5.10.0
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
