@@ -7,22 +7,49 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role { CUSTOMER HALL_MANAGER ADMIN }
-enum SeatCategory { FRONT STANDARD PREMIUM RECLINER }
-enum ScreenType { STANDARD IMAX FOURDX DOLBY_ATMOS }
-enum BookingStatus { PENDING CONFIRMED CANCELLED }
-enum PaymentStatus { PENDING SUCCESS FAILED REFUNDED }
+enum Role {
+  CUSTOMER
+  HALL_MANAGER
+  ADMIN
+}
+
+enum SeatCategory {
+  FRONT
+  STANDARD
+  PREMIUM
+  RECLINER
+}
+
+enum ScreenType {
+  STANDARD
+  IMAX
+  FOURDX
+  DOLBY_ATMOS
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
 
 model User {
-  id        String   @id @default(cuid())
-  phone     String   @unique
-  name      String?
-  role      Role     @default(CUSTOMER)
-  disabled  Boolean  @default(false)
-  managedScreens Screen[] @relation("ScreenManager")
-  bookings  Booking[]
-  prefs     Json?    // language, seat category, favourite genres
-  createdAt DateTime @default(now())
+  id             String    @id @default(cuid())
+  phone          String    @unique
+  name           String?
+  role           Role      @default(CUSTOMER)
+  disabled       Boolean   @default(false)
+  managedScreens Screen[]  @relation("ScreenManager")
+  bookings       Booking[]
+  prefs          Json? // language, seat category, favourite genres
+  createdAt      DateTime  @default(now())
 }
 
 model Movie {
@@ -34,18 +61,30 @@ model Movie {
   posterUrl   String?
   trailerUrl  String?
   releaseDate DateTime
-  ageRating   String   // U | UA | A
+  ageRating   String // U | UA | A
   languages   String[]
   genres      Genre[]  @relation("MovieGenres")
   reviews     Review[]
   shows       Show[]
 }
 
-model Genre { id String @id @default(cuid()) name String @unique movies Movie[] @relation("MovieGenres") }
-model Review { id String @id @default(cuid()) movieId String movie Movie @relation(fields:[movieId],references:[id]) rating Int author String body String }
+model Genre {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  movies Movie[] @relation("MovieGenres")
+}
+
+model Review {
+  id      String @id @default(cuid())
+  movieId String
+  movie   Movie  @relation(fields: [movieId], references: [id])
+  rating  Int
+  author  String
+  body    String
+}
 
 model Theatre {
-  id      String @id @default(cuid())
+  id      String   @id @default(cuid())
   chain   String // PVR | INOX | Cinepolis
   name    String
   city    String
@@ -54,54 +93,56 @@ model Theatre {
 }
 
 model Screen {
-  id         String     @id @default(cuid())
-  theatreId  String
-  theatre    Theatre    @relation(fields:[theatreId],references:[id])
-  name       String
-  type       ScreenType
-  format     String     // 2D | 3D
-  equipment  String[]
-  managerId  String?
-  manager    User?      @relation("ScreenManager", fields:[managerId], references:[id])
-  seats      Seat[]
-  shows      Show[]
+  id        String     @id @default(cuid())
+  theatreId String
+  theatre   Theatre    @relation(fields: [theatreId], references: [id])
+  name      String
+  type      ScreenType
+  format    String // 2D | 3D
+  equipment String[]
+  managerId String?
+  manager   User?      @relation("ScreenManager", fields: [managerId], references: [id])
+  seats     Seat[]
+  shows     Show[]
 }
 
 model Seat {
   id       String       @id @default(cuid())
   screenId String
-  screen   Screen       @relation(fields:[screenId],references:[id])
+  screen   Screen       @relation(fields: [screenId], references: [id])
   row      String
   number   Int
   category SeatCategory
+
   @@unique([screenId, row, number])
 }
 
 model Show {
-  id        String   @id @default(cuid())
-  movieId   String
-  screenId  String
-  movie     Movie    @relation(fields:[movieId],references:[id])
-  screen    Screen   @relation(fields:[screenId],references:[id])
-  startTime DateTime
-  endTime   DateTime
-  basePrice Int      // paise; per-seat = base * category multiplier
-  language  String
-  format    String
+  id          String       @id @default(cuid())
+  movieId     String
+  screenId    String
+  movie       Movie        @relation(fields: [movieId], references: [id])
+  screen      Screen       @relation(fields: [screenId], references: [id])
+  startTime   DateTime
+  endTime     DateTime
+  basePrice   Int // paise; per-seat = base * category multiplier
+  language    String
+  format      String
   bookedSeats BookedSeat[]
+
   @@index([screenId, startTime])
 }
 
 model Booking {
-  id          String        @id @default(cuid())
-  userId      String
-  showId      String
-  user        User          @relation(fields:[userId],references:[id])
-  status      BookingStatus @default(PENDING)
-  totalCost   Int
-  seats       BookedSeat[]
-  payment     Payment?
-  createdAt   DateTime      @default(now())
+  id        String        @id @default(cuid())
+  userId    String
+  showId    String
+  user      User          @relation(fields: [userId], references: [id])
+  status    BookingStatus @default(PENDING)
+  totalCost Int
+  seats     BookedSeat[]
+  payment   Payment?
+  createdAt DateTime      @default(now())
 }
 
 model BookedSeat {
@@ -110,21 +151,27 @@ model BookedSeat {
   showId    String
   seatId    String
   pricePaid Int
-  booking   Booking @relation(fields:[bookingId],references:[id])
-  show      Show    @relation(fields:[showId],references:[id])
+  booking   Booking @relation(fields: [bookingId], references: [id])
+  show      Show    @relation(fields: [showId], references: [id])
+
   @@unique([showId, seatId]) // DB-level double-booking guard
 }
 
 model Payment {
   id            String        @id @default(cuid())
   bookingId     String        @unique
+  booking       Booking       @relation(fields: [bookingId], references: [id])
   amount        Int
   status        PaymentStatus @default(PENDING)
   transactionId String        @unique
   createdAt     DateTime      @default(now())
 }
 
-model PromoCode { code String @id percentOff Int active Boolean @default(true) }
+model PromoCode {
+  code       String  @id
+  percentOff Int
+  active     Boolean @default(true)
+}
 
 model AdminActivityLog {
   id        String   @id @default(cuid())
@@ -135,5 +182,18 @@ model AdminActivityLog {
   createdAt DateTime @default(now())
 }
 
-model Conversation { id String @id @default(cuid()) userId String createdAt DateTime @default(now()) messages Message[] }
-model Message { id String @id @default(cuid()) conversationId String role String content Json createdAt DateTime @default(now()) conversation Conversation @relation(fields:[conversationId],references:[id]) }
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  createdAt DateTime  @default(now())
+  messages  Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           String
+  content        Json
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+}
