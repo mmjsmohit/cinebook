@@ -4,6 +4,9 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('Clearing old data...');
+  await prisma.message.deleteMany();
+  await prisma.conversation.deleteMany();
+  await prisma.adminActivityLog.deleteMany();
   await prisma.bookedSeat.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.booking.deleteMany();
