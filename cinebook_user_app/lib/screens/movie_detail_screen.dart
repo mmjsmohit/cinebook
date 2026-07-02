@@ -50,7 +50,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (_movie?['posterUrl'] != null)
-                  Image.network(_movie!['posterUrl'], height: 300, width: double.infinity, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.movie)),
+                  Image.network(_movie!['posterUrl'], height: 300, width: double.infinity, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.movie, color: CinemaColors.steelGray)),
                 const SizedBox(height: 16),
                 Text(_movie?['title'] ?? '', style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 8),

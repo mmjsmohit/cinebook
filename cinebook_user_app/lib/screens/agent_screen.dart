@@ -100,12 +100,12 @@ class _AgentScreenState extends State<AgentScreen> {
                 child: SafeArea(
                   child: Column(
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
                         child: Text(
                           'Past Threads',
-                          style: TextStyle(
-                            fontSize: 18,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: CinemaColors.warmAmber,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -142,16 +142,16 @@ class _AgentScreenState extends State<AgentScreen> {
                       state.bookingContext.containsKey('heldSeatIds'))
                     Container(
                       padding: const EdgeInsets.all(12),
-                      color: Colors.amber.shade100,
+                      color: CinemaColors.warmAmber.withValues(alpha: 0.1),
                       child: Row(
                         children: [
-                          const Icon(Icons.timer, color: Colors.amber),
+                          const Icon(Icons.timer, color: CinemaColors.warmAmber),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'You have seats on hold. Please confirm booking before the hold expires.',
-                              style: TextStyle(
-                                color: Colors.amber.shade900,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: CinemaColors.warmAmber,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -252,18 +252,18 @@ class _AgentScreenState extends State<AgentScreen> {
                             width: double.infinity,
                             errorBuilder: (context, error, stackTrace) =>
                                 Container(
-                                  color: Colors.grey[800],
+                                  color: CinemaColors.inkCharcoal,
                                   child: const Icon(
                                     Icons.movie,
-                                    color: Colors.white54,
+                                    color: CinemaColors.steelGray,
                                   ),
                                 ),
                           )
                         : Container(
-                            color: Colors.grey[800],
+                            color: CinemaColors.inkCharcoal,
                             child: const Icon(
                               Icons.movie,
-                              color: Colors.white54,
+                              color: CinemaColors.steelGray,
                             ),
                           ),
                   ),
@@ -273,9 +273,8 @@ class _AgentScreenState extends State<AgentScreen> {
                   movie['title'] ?? 'Unknown',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    fontSize: 12,
                   ),
                 ),
               ],
@@ -303,8 +302,8 @@ class _AgentScreenState extends State<AgentScreen> {
                   errorBuilder: (context, error, stackTrace) => Container(
                     width: 60,
                     height: 90,
-                    color: Colors.grey[800],
-                    child: const Icon(Icons.movie, color: Colors.white54),
+                    color: CinemaColors.inkCharcoal,
+                    child: const Icon(Icons.movie, color: CinemaColors.steelGray),
                   ),
                 ),
               )
@@ -312,8 +311,8 @@ class _AgentScreenState extends State<AgentScreen> {
               Container(
                 width: 60,
                 height: 90,
-                color: Colors.grey[800],
-                child: const Icon(Icons.movie, color: Colors.white54),
+                color: CinemaColors.inkCharcoal,
+                child: const Icon(Icons.movie, color: CinemaColors.steelGray),
               ),
             const SizedBox(width: 12),
             Expanded(
@@ -322,9 +321,8 @@ class _AgentScreenState extends State<AgentScreen> {
                 children: [
                   Text(
                     data['title'] ?? '',
-                    style: const TextStyle(
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -332,7 +330,7 @@ class _AgentScreenState extends State<AgentScreen> {
                     data['description'] ?? '',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: CinemaColors.steelGray),
                   ),
                 ],
               ),
@@ -367,18 +365,18 @@ class _AgentScreenState extends State<AgentScreen> {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
+        border: Border.all(color: CinemaColors.steelGray),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Seat Map Preview',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Icon(Icons.event_seat, size: 48, color: Colors.grey),
+          const Icon(Icons.event_seat, size: 48, color: CinemaColors.steelGray),
           Text('Available seats: ${data['availableSeats'] ?? 0}'),
         ],
       ),
@@ -387,7 +385,7 @@ class _AgentScreenState extends State<AgentScreen> {
 
   Widget _buildBookingSummary(Map<String, dynamic> data) {
     return Card(
-      color: Colors.deepPurple.withOpacity(0.1),
+      color: CinemaColors.deepCharcoal.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -404,12 +402,12 @@ class _AgentScreenState extends State<AgentScreen> {
             ),
             Text(
               'Total: \$${data['totalPrice']}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             if (data['holdExpiresAt'] != null)
               Text(
                 'Hold expires at: ${data['holdExpiresAt']}',
-                style: const TextStyle(color: Colors.orange, fontSize: 12),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: CinemaColors.warmAmber),
               ),
           ],
         ),
@@ -423,16 +421,16 @@ class _AgentScreenState extends State<AgentScreen> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: success
-            ? Colors.green.withOpacity(0.1)
-            : Colors.red.withOpacity(0.1),
+            ? CinemaColors.successGreen.withValues(alpha: 0.1)
+            : CinemaColors.neonRed.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: success ? Colors.green : Colors.red),
+        border: Border.all(color: success ? CinemaColors.successGreen : CinemaColors.neonRed),
       ),
       child: Row(
         children: [
           Icon(
             success ? Icons.check_circle : Icons.error,
-            color: success ? Colors.green : Colors.red,
+            color: success ? CinemaColors.successGreen : CinemaColors.neonRed,
           ),
           const SizedBox(width: 8),
           Expanded(

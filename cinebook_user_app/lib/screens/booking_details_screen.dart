@@ -54,7 +54,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_error != null) {
-      return Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.red)));
+      return Center(child: Text('Error: $_error', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: CinemaColors.neonRed)));
     }
     if (_booking == null) {
       return const Center(child: Text('Booking not found.'));
@@ -108,11 +108,11 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               width: 80,
               height: 120,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
+              errorBuilder: (context, error, stackTrace) => Container(
                 width: 80,
                 height: 120,
-                color: Colors.grey[800],
-                child: const Icon(Icons.movie, color: Colors.white54, size: 40),
+                color: CinemaColors.inkCharcoal,
+                child: const Icon(Icons.movie, color: CinemaColors.steelGray, size: 40),
               ),
             ),
           ),
@@ -123,23 +123,23 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             children: [
               Text(
                 movie['title'],
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 '${movie['runtimeMin']} mins • ${movie['ageRating']}',
-                style: const TextStyle(color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: CinemaColors.steelGray),
               ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(_booking!['status']).withOpacity(0.2),
+                  color: _getStatusColor(_booking!['status']).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   _booking!['status'],
-                  style: TextStyle(
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: _getStatusColor(_booking!['status']),
                     fontWeight: FontWeight.bold,
                   ),
@@ -156,15 +156,15 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: Colors.grey, size: 24),
+        Icon(icon, color: CinemaColors.steelGray, size: 24),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: CinemaColors.steelGray)),
               const SizedBox(height: 4),
-              Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+              Text(value, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
             ],
           ),
         ),
@@ -177,20 +177,20 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: CinemaColors.inkCharcoal,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        border: Border.all(color: CinemaColors.structuralBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Payment Summary', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text('Payment Summary', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total Amount', style: TextStyle(color: Colors.grey)),
-              Text('₹${_booking!['totalCost']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('Total Amount', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: CinemaColors.steelGray)),
+              Text('₹${_booking!['totalCost']}', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             ],
           ),
           if (payment != null) ...[
@@ -198,8 +198,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Transaction ID', style: TextStyle(color: Colors.grey)),
-                Text(payment['transactionId'].toString().substring(0, 8) + '...'),
+                Text('Transaction ID', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: CinemaColors.steelGray)),
+                Text('${payment['transactionId'].toString().substring(0, 8)}...'),
               ],
             ),
           ],
@@ -211,13 +211,13 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'CONFIRMED':
-        return Colors.green;
+        return CinemaColors.successGreen;
       case 'CANCELLED':
-        return Colors.red;
+        return CinemaColors.neonRed;
       case 'PENDING':
-        return Colors.orange;
+        return CinemaColors.warmAmber;
       default:
-        return Colors.grey;
+        return CinemaColors.steelGray;
     }
   }
 }

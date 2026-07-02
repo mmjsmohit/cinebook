@@ -68,7 +68,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   trailing: b['status'] == 'CONFIRMED'
                       ? TextButton(
                           onPressed: () => _cancelBooking(b['id']),
-                          child: const Text('Cancel', style: TextStyle(color: Colors.red)),
+                          child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: CinemaColors.neonRed)),
                         )
                       : null,
                 );

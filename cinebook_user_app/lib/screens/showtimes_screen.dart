@@ -62,7 +62,7 @@ class _ShowtimesScreenState extends State<ShowtimesScreen> {
           // Date Picker
           Container(
             height: 70,
-            color: Theme.of(context).cardColor,
+            color: CinemaColors.inkCharcoal,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: 7,
@@ -78,16 +78,16 @@ class _ShowtimesScreenState extends State<ShowtimesScreen> {
                     width: 60,
                     margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                      color: isSelected ? CinemaColors.neonRed : null,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey),
+                      border: Border.all(color: isSelected ? CinemaColors.neonRed : CinemaColors.structuralBorder),
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(DateFormat('EEE').format(date).toUpperCase(), style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Colors.grey)),
-                        Text(DateFormat('dd').format(date), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : null)),
-                        Text(DateFormat('MMM').format(date).toUpperCase(), style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Colors.grey)),
+                        Text(DateFormat('EEE').format(date).toUpperCase(), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: isSelected ? CinemaColors.offWhite : CinemaColors.steelGray)),
+                        Text(DateFormat('dd').format(date), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: isSelected ? CinemaColors.offWhite : null)),
+                        Text(DateFormat('MMM').format(date).toUpperCase(), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: isSelected ? CinemaColors.offWhite : CinemaColors.steelGray)),
                       ],
                     ),
                   ),
@@ -118,8 +118,8 @@ class _ShowtimesScreenState extends State<ShowtimesScreen> {
                                     children: [
                                       const Icon(Icons.favorite_border, size: 20),
                                       const SizedBox(width: 8),
-                                      Expanded(child: Text(theatreName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-                                      const Icon(Icons.info_outline, size: 20, color: Colors.grey),
+                                      Expanded(child: Text(theatreName, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
+                                      const Icon(Icons.info_outline, size: 20, color: CinemaColors.steelGray),
                                     ],
                                   ),
                                   const SizedBox(height: 16),
@@ -138,14 +138,14 @@ class _ShowtimesScreenState extends State<ShowtimesScreen> {
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                           decoration: BoxDecoration(
-                                            border: Border.all(color: Colors.green),
+                                            border: Border.all(color: CinemaColors.successGreen),
                                             borderRadius: BorderRadius.circular(4),
                                           ),
                                           child: Column(
                                             children: [
-                                              Text(timeStr, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                                              Text(timeStr, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: CinemaColors.successGreen, fontWeight: FontWeight.bold)),
                                               const SizedBox(height: 4),
-                                              Text('${show['format']} ${show['language']}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                              Text('${show['format']} ${show['language']}', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: CinemaColors.steelGray)),
                                             ],
                                           ),
                                         ),

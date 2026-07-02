@@ -42,8 +42,8 @@ class _HomeScreenState extends State<HomeScreen> {
         final movie = _movies[index];
         return ListTile(
           leading: movie['posterUrl'] != null 
-              ? Image.network(movie['posterUrl'], width: 50, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.movie, size: 50))
-              : const Icon(Icons.movie, size: 50),
+              ? Image.network(movie['posterUrl'], width: 50, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.movie, size: 50, color: CinemaColors.steelGray))
+              : const Icon(Icons.movie, size: 50, color: CinemaColors.steelGray),
           title: Text(movie['title'] ?? 'Unknown'),
           subtitle: Text((movie['genres'] as List?)?.map((g) => g['name']).join(', ') ?? ''),
           onTap: () {
