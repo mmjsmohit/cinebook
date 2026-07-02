@@ -40,7 +40,7 @@ export function createBookingTools(userId: string, role: string) {
       inputSchema: theatreQuerySchema,
       execute: withToolLogger('findTheatres', async (input) => {
         const theatres = await listTheatres(input);
-        return { renderHint: 'text' as const, theatres };
+        return JSON.parse(JSON.stringify({ renderHint: 'text' as const, theatres }));
       }),
     }),
 
@@ -51,7 +51,7 @@ export function createBookingTools(userId: string, role: string) {
       execute: withToolLogger('getScreenInfo', async ({ screenId }) => {
         const screen = await getScreenById(screenId);
         if (!screen) throw new Error(`Screen ${screenId} not found`);
-        return { renderHint: 'text' as const, screen };
+        return JSON.parse(JSON.stringify({ renderHint: 'text' as const, screen }));
       }),
     }),
 
@@ -62,7 +62,7 @@ export function createBookingTools(userId: string, role: string) {
       execute: withToolLogger('checkSeatAvailability', async ({ showId }) => {
         const seats = await getSeatAvailability(showId);
         if (!seats) throw new Error(`Show ${showId} not found`);
-        return { renderHint: 'seatMap' as const, showId, seats };
+        return JSON.parse(JSON.stringify({ renderHint: 'seatMap' as const, showId, seats }));
       }),
     }),
 
@@ -73,7 +73,7 @@ export function createBookingTools(userId: string, role: string) {
       execute: withToolLogger('holdSeats', async ({ showId, seatIds }) => {
         const result = await holdSeats(showId, seatIds, userId);
         if ('failedSeatIds' in result) {
-          return { renderHint: 'text' as const, success: false, failedSeatIds: result.failedSeatIds };
+          return JSON.parse(JSON.stringify({ renderHint: 'text' as const, success: false, failedSeatIds: result.failedSeatIds }));
         }
         return {
           renderHint: 'text' as const,
@@ -90,7 +90,7 @@ export function createBookingTools(userId: string, role: string) {
       inputSchema: releaseSeatsToolSchema,
       execute: withToolLogger('releaseSeats', async ({ showId, seatIds, holdToken }) => {
         await releaseHold(showId, seatIds, userId, holdToken);
-        return { renderHint: 'text' as const, released: true };
+        return JSON.parse(JSON.stringify({ renderHint: 'text' as const, released: true }));
       }),
     }),
 
@@ -100,7 +100,7 @@ export function createBookingTools(userId: string, role: string) {
       inputSchema: createBookingToolSchema,
       execute: withToolLogger('createBooking', async (input) => {
         const result = await confirmBooking(userId, input);
-        return { renderHint: 'bookingSummary' as const, ...result };
+        return JSON.parse(JSON.stringify({ renderHint: 'bookingSummary' as const, ...result }));
       }),
     }),
 
@@ -111,7 +111,7 @@ export function createBookingTools(userId: string, role: string) {
       execute: withToolLogger('checkBookingStatus', async ({ bookingId }) => {
         const booking = await getBookingById(bookingId, userId, role);
         if (!booking) throw new Error(`Booking ${bookingId} not found or access denied`);
-        return { renderHint: 'bookingSummary' as const, booking };
+        return JSON.parse(JSON.stringify({ renderHint: 'bookingSummary' as const, booking }));
       }),
     }),
 
@@ -121,7 +121,7 @@ export function createBookingTools(userId: string, role: string) {
       inputSchema: cancelBookingToolSchema,
       execute: withToolLogger('cancelBooking', async ({ bookingId }) => {
         const result = await cancelBooking(bookingId, userId, role);
-        return { renderHint: 'bookingSummary' as const, ...result };
+        return JSON.parse(JSON.stringify({ renderHint: 'bookingSummary' as const, ...result }));
       }),
     }),
 
@@ -131,7 +131,7 @@ export function createBookingTools(userId: string, role: string) {
       inputSchema: z.object({}),
       execute: withToolLogger('viewBookingHistory', async () => {
         const bookings = await getUserBookings(userId);
-        return { renderHint: 'bookingSummary' as const, bookings };
+        return JSON.parse(JSON.stringify({ renderHint: 'bookingSummary' as const, bookings }));
       }),
     }),
 
@@ -141,7 +141,7 @@ export function createBookingTools(userId: string, role: string) {
       inputSchema: startPaymentToolSchema,
       execute: withToolLogger('startPayment', async ({ bookingId, cardNumber }) => {
         const result = await initiatePayment(bookingId, cardNumber ?? '4000');
-        return { renderHint: 'paymentResult' as const, ...result };
+        return JSON.parse(JSON.stringify({ renderHint: 'paymentResult' as const, ...result }));
       }),
     }),
 
@@ -151,7 +151,7 @@ export function createBookingTools(userId: string, role: string) {
       inputSchema: startPaymentToolSchema,
       execute: withToolLogger('confirmPayment', async ({ bookingId, cardNumber }) => {
         const result = await initiatePayment(bookingId, cardNumber ?? '4000');
-        return { renderHint: 'paymentResult' as const, ...result };
+        return JSON.parse(JSON.stringify({ renderHint: 'paymentResult' as const, ...result }));
       }),
     }),
 
@@ -161,7 +161,7 @@ export function createBookingTools(userId: string, role: string) {
       inputSchema: promoApplySchema,
       execute: withToolLogger('applyPromoCode', async ({ code, amount }) => {
         const result = await applyPromoCode(code, amount);
-        return { renderHint: 'text' as const, ...result };
+        return JSON.parse(JSON.stringify({ renderHint: 'text' as const, ...result }));
       }),
     }),
   };

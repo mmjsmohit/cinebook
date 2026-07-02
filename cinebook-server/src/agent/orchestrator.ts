@@ -104,6 +104,7 @@ export async function runAgent(opts: RunAgentOptions): Promise<void> {
 
     // ── 7. Map fullStream parts → AG-UI events ────────────────────────────
     for await (const part of result.fullStream) {
+      console.log('STREAM PART:', JSON.stringify(part));
       switch (part.type) {
         // Text streaming — ai@7 uses 'text' field, not 'textDelta'
         case 'text-delta':
@@ -111,18 +112,24 @@ export async function runAgent(opts: RunAgentOptions): Promise<void> {
           break;
 
         // Tool input lifecycle — ai@7 separates start/delta/end
-        case 'tool-input-start':
+        case 'tool-input-start': {
+          const p = part as any;
           emitTextEnd(res, emitterState);
-          emitToolCallStart(res, part.id, part.toolName);
+          emitToolCallStart(res, p.toolCallId || p.id, p.toolName || p.name);
           break;
+        }
 
-        case 'tool-input-delta':
-          emitToolCallArgs(res, part.id, part.delta);
+        case 'tool-input-delta': {
+          const p = part as any;
+          emitToolCallArgs(res, p.toolCallId || p.id, p.argsTextDelta || p.inputTextDelta || p.delta || '');
           break;
+        }
 
-        case 'tool-input-end':
-          emitToolCallEnd(res, part.id);
+        case 'tool-input-end': {
+          const p = part as any;
+          emitToolCallEnd(res, p.toolCallId || p.id);
           break;
+        }
 
         // Tool result — ai@7 uses 'output', 'toolCallId', 'toolName'
         case 'tool-result': {

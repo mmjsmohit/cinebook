@@ -34,7 +34,7 @@ export const movieTools = {
     inputSchema: movieSearchSchema,
     execute: withToolLogger('searchMovies', async (input) => {
       const movies = await searchMovies(input);
-      return { renderHint: 'movieList' as const, movies };
+      return JSON.parse(JSON.stringify({ renderHint: 'movieList', movies }));
     }),
   }),
 
@@ -45,7 +45,7 @@ export const movieTools = {
     execute: withToolLogger('getMovieDetails', async ({ movieId }) => {
       const movie = await getMovieById(movieId);
       if (!movie) throw new Error(`Movie ${movieId} not found`);
-      return { renderHint: 'movieCard' as const, movie };
+      return JSON.parse(JSON.stringify({ renderHint: 'movieCard', movie }));
     }),
   }),
 
@@ -76,7 +76,7 @@ export const movieTools = {
     inputSchema: showQuerySchema,
     execute: withToolLogger('getShowtimes', async (input) => {
       const shows = await getShows(input);
-      return { renderHint: 'showtimes' as const, shows };
+      return JSON.parse(JSON.stringify({ renderHint: 'showtimes', shows }));
     }),
   }),
 
@@ -86,7 +86,7 @@ export const movieTools = {
     inputSchema: suggestSimilarSchema,
     execute: withToolLogger('suggestSimilar', async ({ movieId }) => {
       const movies = await getSimilarMovies(movieId);
-      return { renderHint: 'movieList' as const, movies };
+      return JSON.parse(JSON.stringify({ renderHint: 'movieList', movies }));
     }),
   }),
 
@@ -96,7 +96,7 @@ export const movieTools = {
     inputSchema: z.object({}),
     execute: withToolLogger('getTrending', async () => {
       const movies = await getTrendingMovies();
-      return { renderHint: 'movieList' as const, movies };
+      return JSON.parse(JSON.stringify({ renderHint: 'movieList', movies }));
     }),
   }),
 
@@ -106,7 +106,7 @@ export const movieTools = {
     inputSchema: movieUpcomingSchema,
     execute: withToolLogger('getUpcoming', async (input) => {
       const movies = await getUpcomingMovies(input.date);
-      return { renderHint: 'movieList' as const, movies };
+      return JSON.parse(JSON.stringify({ renderHint: 'movieList', movies }));
     }),
   }),
 

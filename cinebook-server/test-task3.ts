@@ -25,11 +25,14 @@ function assert(name: string, condition: boolean, detail?: string) {
 async function req(method: string, path: string, body?: unknown, token?: string) {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(`${BASE}${path}`, {
+  const init: RequestInit = {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  };
+  if (body !== undefined) {
+    init.body = JSON.stringify(body);
+  }
+  const res = await fetch(`${BASE}${path}`, init);
   let json: unknown;
   try { json = await res.json(); } catch { json = {}; }
   return { status: res.status, body: json as Record<string, unknown>, headers: res.headers };

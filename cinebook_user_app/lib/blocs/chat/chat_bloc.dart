@@ -55,8 +55,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     try {
       final client = await _getClient();
       final stream = client.runAgent(
-        'cinebook',
+        'agents/cinebook/run',
         SimpleRunAgentInput(
+          threadId: state.threadId,
           messages: [
             UserMessage(
               id: userMessageId,
@@ -71,7 +72,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         if (_cancelToken?.isCancelled ?? false) break;
         
         if (uiEvent is RunStartedEvent) {
-          emit(state.copyWith(isLoading: true));
+          emit(state.copyWith(isLoading: true, threadId: uiEvent.threadId));
         } else if (uiEvent is TextMessageContentEvent) {
           final messageId = uiEvent.messageId;
           if (!controller.messages.any((m) => m.customProperties?['id'] == messageId)) {
