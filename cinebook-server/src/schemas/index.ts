@@ -159,3 +159,98 @@ export const contactSupportSchema = z.object({
 // Agent type exports
 export type AgentRunInput = z.infer<typeof agentRunSchema>;
 export type DelegateInput = z.infer<typeof delegateSchema>;
+
+// ─── Admin Schemas ───────────────────────────────────────────────────────────
+
+export const adminUserPatchSchema = z.object({
+  name: z.string().optional(),
+  phone: z.string().optional(),
+});
+
+export const adminUserRoleSchema = z.object({
+  role: z.enum(['CUSTOMER', 'HALL_MANAGER', 'ADMIN']),
+});
+
+export const adminMovieCreateSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  runtimeMin: z.number().int().positive(),
+  cast: z.array(z.string()).default([]),
+  posterUrl: z.string().url().optional(),
+  trailerUrl: z.string().url().optional(),
+  releaseDate: z.string().datetime({ offset: true }),
+  ageRating: z.enum(['U', 'UA', 'A']),
+  languages: z.array(z.string()).min(1),
+  genreIds: z.array(z.string()).default([]),
+});
+
+export const adminMoviePatchSchema = adminMovieCreateSchema.partial();
+
+export const adminTheatreCreateSchema = z.object({
+  chain: z.string().min(1),
+  name: z.string().min(1),
+  city: z.string().min(1),
+  address: z.string().min(1),
+});
+
+export const adminTheatrePatchSchema = adminTheatreCreateSchema.partial();
+
+export const adminScreenCreateSchema = z.object({
+  theatreId: z.string(),
+  name: z.string().min(1),
+  type: z.enum(['STANDARD', 'IMAX', 'FOURDX', 'DOLBY_ATMOS']),
+  format: z.string(), // 2D | 3D
+  equipment: z.array(z.string()).default([]),
+  managerId: z.string().optional(),
+  seats: z.array(z.object({
+    row: z.string(),
+    number: z.number().int().positive(),
+    category: z.enum(['FRONT', 'STANDARD', 'PREMIUM', 'RECLINER']),
+  })).optional(),
+});
+
+export const adminScreenPatchSchema = z.object({
+  name: z.string().min(1).optional(),
+  type: z.enum(['STANDARD', 'IMAX', 'FOURDX', 'DOLBY_ATMOS']).optional(),
+  format: z.string().optional(),
+  equipment: z.array(z.string()).optional(),
+  managerId: z.string().nullable().optional(),
+  seats: z.array(z.object({
+    row: z.string(),
+    number: z.number().int().positive(),
+    category: z.enum(['FRONT', 'STANDARD', 'PREMIUM', 'RECLINER']),
+  })).optional(),
+});
+
+export const adminShowCreateSchema = z.object({
+  movieId: z.string(),
+  screenId: z.string(),
+  startTime: z.string().datetime({ offset: true }),
+  basePrice: z.number().int().positive(),
+  language: z.string(),
+  format: z.string(),
+});
+
+export const adminReportsQuerySchema = z.object({
+  range: z.enum(['daily', 'weekly', 'monthly']),
+});
+
+export const adminActivityQuerySchema = z.object({
+  actorId: z.string().optional(),
+  from: z.string().datetime({ offset: true }).optional(),
+  to: z.string().datetime({ offset: true }).optional(),
+  limit: z.coerce.number().int().positive().default(100),
+});
+
+// Admin type exports
+export type AdminUserPatchInput = z.infer<typeof adminUserPatchSchema>;
+export type AdminUserRoleInput = z.infer<typeof adminUserRoleSchema>;
+export type AdminMovieCreateInput = z.infer<typeof adminMovieCreateSchema>;
+export type AdminMoviePatchInput = z.infer<typeof adminMoviePatchSchema>;
+export type AdminTheatreCreateInput = z.infer<typeof adminTheatreCreateSchema>;
+export type AdminTheatrePatchInput = z.infer<typeof adminTheatrePatchSchema>;
+export type AdminScreenCreateInput = z.infer<typeof adminScreenCreateSchema>;
+export type AdminScreenPatchInput = z.infer<typeof adminScreenPatchSchema>;
+export type AdminShowCreateInput = z.infer<typeof adminShowCreateSchema>;
+export type AdminReportsQueryInput = z.infer<typeof adminReportsQuerySchema>;
+export type AdminActivityQueryInput = z.infer<typeof adminActivityQuerySchema>;
