@@ -21,6 +21,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
   String? _promoMessage;
 
   @override
+  void initState() {
+    super.initState();
+    _promoController.addListener(() {
+      if (_appliedPromoCode != null && _promoController.text.trim() != _appliedPromoCode) {
+        setState(() {
+          _appliedPromoCode = null;
+          _promoMessage = null;
+        });
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _promoController.dispose();
     super.dispose();
@@ -30,7 +43,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final code = _promoController.text.trim();
     if (code.isEmpty) return;
 
-    setState(() => _isApplyingPromo = true);
+    setState(() {
+      _isApplyingPromo = true;
+      _appliedPromoCode = null;
+      _promoMessage = null;
+    });
     try {
       final api = context.read<ApiClient>();
       
@@ -44,6 +61,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
+        _appliedPromoCode = null;
         _promoMessage = 'Invalid promo code';
         _isApplyingPromo = false;
       });
@@ -83,7 +101,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-      setState(() => _isProcessing = false);
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
