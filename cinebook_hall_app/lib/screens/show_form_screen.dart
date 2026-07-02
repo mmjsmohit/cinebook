@@ -88,8 +88,8 @@ class _ShowFormScreenState extends State<ShowFormScreen> {
             if (_errorMessage != null)
               Container(
                 padding: const EdgeInsets.all(8),
-                color: Colors.red.withOpacity(0.1),
-                child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+                color: CinemaColors.neonRed.withValues(alpha: 0.1),
+                child: Text(_errorMessage!, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: CinemaColors.neonRed)),
               ),
             TextField(
               controller: _movieIdController,

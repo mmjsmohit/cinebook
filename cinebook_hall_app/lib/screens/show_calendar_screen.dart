@@ -75,7 +75,7 @@ class _ShowCalendarScreenState extends State<ShowCalendarScreen> {
                   title: Text(show['movie']?['title'] ?? 'Unknown Movie'),
                   subtitle: Text('${show['startTime']} - ${show['language']} ${show['format']}'),
                   trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                    icon: const Icon(Icons.delete, color: CinemaColors.neonRed),
                     onPressed: () => _deleteShow(show['id']),
                   ),
                   onTap: () async {
