@@ -22,7 +22,7 @@ class FeaturedMovieCard extends StatelessWidget {
           image: DecorationImage(
             image: NetworkImage(movie['posterUrl'] ?? 'https://via.placeholder.com/400'),
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.4), BlendMode.darken),
+            colorFilter: ColorFilter.mode(CinemaColors.deepCharcoal.withValues(alpha: 0.4), BlendMode.darken),
           ),
         ),
         child: Padding(
@@ -34,12 +34,12 @@ class FeaturedMovieCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(color: CinemaColors.neonRed, borderRadius: BorderRadius.circular(4)),
-                child: Text('FEATURED', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text('FEATURED', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: CinemaColors.offWhite, fontWeight: FontWeight.bold)),
               ),
               const Spacer(),
-              Text(movie['title'] ?? 'Unknown', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+              Text(movie['title'] ?? 'Unknown', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: CinemaColors.offWhite, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              Text((movie['genres'] as List?)?.map((g) => g['name']).join(', ') ?? '', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70)),
+              Text((movie['genres'] as List?)?.map((g) => g['name']).join(', ') ?? '', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: CinemaColors.steelGray)),
             ],
           ),
         ),
