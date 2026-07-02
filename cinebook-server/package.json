@@ -16,7 +16,9 @@
     "node": ">=22"
   },
   "dependencies": {
+    "@openrouter/ai-sdk-provider": "^6.0.0-alpha.1",
     "@prisma/client": "^5.22.0",
+    "ai": "^7.0.11",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
