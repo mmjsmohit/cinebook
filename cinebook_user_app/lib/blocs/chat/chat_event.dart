@@ -16,5 +16,5 @@ class ChatFetchThreads extends ChatEvent {}
 
 class ChatSwitchThread extends ChatEvent {
   final String threadId;
-  const ChatSwitchThread(this.threadId);
+  ChatSwitchThread(this.threadId);
 }
