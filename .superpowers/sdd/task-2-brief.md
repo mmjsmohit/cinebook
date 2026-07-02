@@ -1,99 +1,68 @@
-### Task 2: Refactor Home Screen to Consume New APIs
+### Task 2: Integrate Theatres Tab into Main Screen
 
 **Files:**
-- Modify: `/Users/mohittiwari/Dev/Cinebook/cinebook_user_app/lib/screens/home_screen.dart`
+- Modify: `/Users/mohittiwari/Dev/Cinebook/cinebook_user_app/lib/screens/main_screen.dart`
 
 **Interfaces:**
-- Consumes: `FeaturedMovieCard`, `CategoryListWidget`
+- Consumes: `TheatresScreen`
 
-- [ ] **Step 1: Update API calls in `home_screen.dart`**
-Replace the single `/movies` call with parallel calls for trending, upcoming, genres, and languages. Also import the new widgets.
+- [ ] **Step 1: Update `main_screen.dart` to include Theatres tab**
+Add `theatres_screen.dart` to the pages and NavigationBar.
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cinebook_core/cinebook_core.dart';
-import '../widgets/featured_movie_card.dart';
-import '../widgets/category_list_widget.dart';
-import 'movie_detail_screen.dart';
+import 'home_screen.dart';
+import 'theatres_screen.dart';
+import 'history_screen.dart';
+import 'agent_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  List<dynamic> _trendingMovies = [];
-  List<dynamic> _upcomingMovies = [];
-  List<dynamic> _genres = [];
-  List<dynamic> _languages = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchDashboardData();
-  }
-
-  Future<void> _fetchDashboardData() async {
-    try {
-      final api = context.read<ApiClient>();
-      final results = await Future.wait([
-        api.dio.get('/movies/trending'),
-        api.dio.get('/movies/upcoming?date=${DateTime.now().toIso8601String().split('T')[0]}'),
-        api.dio.get('/genres'),
-        api.dio.get('/languages'),
-      ]);
-      setState(() {
-        _trendingMovies = results[0].data['movies'];
-        _upcomingMovies = results[1].data['movies'];
-        _genres = results[2].data['genres'];
-        _languages = results[3].data['languages'];
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-    }
-  }
+class _MainScreenState extends State<MainScreen> {
+  int _currentIndex = 0;
+  
+  final _pages = [
+    const HomeScreen(),
+    const TheatresScreen(),
+    const AgentScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
-    return RefreshIndicator(
-      onRefresh: _fetchDashboardData,
-      child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        children: [
-          if (_trendingMovies.isNotEmpty) FeaturedMovieCard(movie: _trendingMovies.first),
-          const SizedBox(height: 16),
-          CategoryListWidget(
-            title: 'Browse by Genre',
-            items: _genres,
-            onSelect: (g) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected ${g['name']}')),
-          ),
-          const SizedBox(height: 16),
-          CategoryListWidget(
-            title: 'Languages',
-            items: _languages,
-            onSelect: (l) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected ${l['name']}')),
-          ),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text('Upcoming Releases', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-          ),
-          ..._upcomingMovies.map((movie) => ListTile(
-            leading: movie['posterUrl'] != null 
-                ? Image.network(movie['posterUrl'], width: 50, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.movie, size: 50, color: CinemaColors.steelGray))
-                : const Icon(Icons.movie, size: 50, color: CinemaColors.steelGray),
-            title: Text(movie['title'] ?? 'Unknown', style: Theme.of(context).textTheme.titleMedium),
-            subtitle: Text((movie['genres'] as List?)?.map((g) => g['name']).join(', ') ?? ''),
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => MovieDetailScreen(movieId: movie['id'])));
-            },
-          )),
+    return Scaffold(
+      appBar: _currentIndex == 0 || _currentIndex == 1
+          ? AppBar(
+              title: Text(_currentIndex == 0 ? 'CineBook' : 'Theatres'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.history),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () =>
+                      context.read<AuthBloc>().add(AuthLoggedOut()),
+                ),
+              ],
+            )
+          : null,
+      body: _pages[_currentIndex],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.movie), label: 'Movies'),
+          NavigationDestination(icon: Icon(Icons.theaters), label: 'Theatres'),
+          NavigationDestination(icon: Icon(Icons.smart_toy), label: 'Assistant'),
         ],
       ),
     );
@@ -107,9 +76,6 @@ Expected: "No issues found!"
 
 - [ ] **Step 3: Commit**
 ```bash
-git add cinebook_user_app/lib/screens/home_screen.dart
-git commit -m "feat: revamp home screen with trending, upcoming, genres, and languages"
+git add cinebook_user_app/lib/screens/main_screen.dart
+git commit -m "feat: add Theatres tab to main navigation"
 ```
-
----
-

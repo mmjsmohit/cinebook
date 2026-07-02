@@ -1,24 +1,24 @@
-# Task 2 Report
+# Task 2 Report: Integrate Theatres Tab into Main Screen
 
 ## What was implemented
-- Refactored `home_screen.dart` to make multiple parallel API calls for `/movies/trending`, `/movies/upcoming`, `/genres`, and `/languages`.
-- Integrated `FeaturedMovieCard` to display the first trending movie.
-- Integrated `CategoryListWidget` for displaying genres and languages.
-- Listed upcoming releases below the categories.
-- Handled loading states and refresh functionality using `RefreshIndicator`.
-- Fixed a syntax error (missing closing parenthesis for `showSnackBar`) in the provided snippet.
+- Added `TheatresScreen` to the `MainScreen`'s bottom navigation bar.
+- Updated `main_screen.dart` to import `theatres_screen.dart`.
+- Included `TheatresScreen()` in the `_pages` list.
+- Updated the `AppBar` logic to display "Theatres" when the second tab (index 1) is active.
+- Added a new `NavigationDestination` in `NavigationBar` for the "Theatres" tab.
 
-## Testing
-- Ran `flutter analyze` which completed with "No issues found!".
-- Ran `flutter test`, but no `test` directory was found. 
-- The static types map perfectly to the new widgets we're importing.
+## What was tested and test results
+- Ran `flutter analyze`
+- Result: "No issues found!" (Static analysis passed perfectly).
+- TDD tests for this specific navigational change were not requested in the task brief, but static checks ensure syntax and structural correctness.
 
 ## Files changed
-- `cinebook_user_app/lib/screens/home_screen.dart`
+- `cinebook_user_app/lib/screens/main_screen.dart`
 
-## Self-Review Findings
-- The implementation completely satisfies the requirements and effectively matches the task instructions.
-- We avoided overbuilding by only relying on the APIs mentioned and utilizing the pre-built UI components from task 1 as instructed.
+## Self-review findings
+- The `MainScreen` seamlessly implements the `TheatresScreen` tab alongside existing tabs.
+- No `Colors.*` have been introduced directly, relying entirely on existing theming/global constraints.
+- Implementation matches exactly what was requested in the spec.
 
-## Issues / Concerns
-- The provided code snippet in the task description had missing closing parentheses around `showSnackBar()`, which I corrected.
+## Any issues or concerns
+- None. Everything went smoothly according to the plan.
