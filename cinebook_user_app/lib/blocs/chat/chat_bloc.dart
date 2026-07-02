@@ -186,6 +186,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             user: role == 'user' ? user : aiUser,
             text: textContent,
             createdAt: DateTime.parse(msg['createdAt']),
+            customProperties: {'id': msg['id']},
           ));
         }
       }
