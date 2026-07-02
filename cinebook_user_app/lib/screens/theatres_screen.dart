@@ -37,40 +37,57 @@ class _TheatresScreenState extends State<TheatresScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Theatres')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _theatres.isEmpty
-              ? Center(child: Text('No theatres available.', style: Theme.of(context).textTheme.bodyLarge))
-              : ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _theatres.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final t = _theatres[index];
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
-                        title: Text(t['name'] ?? 'Unknown', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                        subtitle: Text(
-                          t['location'] ?? 'Location unavailable',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: CinemaColors.steelGray),
-                        ),
-                        trailing: Icon(Icons.arrow_forward_ios, color: Theme.of(context).colorScheme.primary, size: 16),
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Theatre shows coming soon!')),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_theatres.isEmpty) {
+      return Center(
+        child: Text(
+          'No theatres available.',
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: _theatres.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final t = _theatres[index];
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(16),
+            title: Text(
+              t['name'] ?? 'Unknown',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            subtitle: Text(
+              t['location'] ?? 'Location unavailable',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: CinemaColors.steelGray,
+                  ),
+            ),
+            trailing: Icon(
+              Icons.arrow_forward_ios,
+              color: Theme.of(context).colorScheme.primary,
+              size: 16,
+            ),
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Theatre shows coming soon!')),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
