@@ -27,9 +27,13 @@ export async function listTheatres(input: TheatreQueryInput) {
     return prisma.theatre.findMany({
       where: { city: { equals: input.city, mode: 'insensitive' } },
       orderBy: { name: 'asc' },
+      include: { screens: true },
     });
   }
 
-  return prisma.theatre.findMany({ orderBy: { name: 'asc' } });
+  return prisma.theatre.findMany({ 
+    orderBy: { name: 'asc' },
+    include: { screens: true },
+  });
 }
 
