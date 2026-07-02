@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (phone: string, otp: string) => {
-    const res = await api.post('/auth/verify-otp', { phone, otp });
+    const res = await api.post('/auth/verify-otp', { phone, code: otp });
     if (res.data.user.role !== 'ADMIN') {
       throw new Error('Access denied: ADMIN role required');
     }
