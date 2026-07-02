@@ -9,7 +9,7 @@ import { logger } from '../infra/logger.js';
 
 function getModel() {
   const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY! });
-  return openrouter('anthropic/claude-sonnet-4');
+  return openrouter('google/gemini-3.5-flash');
 }
 
 /**
