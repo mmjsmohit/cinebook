@@ -72,12 +72,13 @@ export async function releaseByOwnerToken(
   logger.info('holdService.releaseByOwnerToken', { showId, seatIds });
   await Promise.all(
     seatIds.map((seatId) =>
-      (redisClient as unknown as {
-        eval: (script: string, opts: { keys: string[]; arguments: string[] }) => Promise<number>;
-      }).eval(COMPARE_AND_DELETE_SCRIPT, {
-        keys: [seatKey(showId, seatId)],
-        arguments: [ownerToken],
-      })
+      redisClient.sendCommand([
+        'EVAL',
+        COMPARE_AND_DELETE_SCRIPT,
+        '1',
+        seatKey(showId, seatId),
+        ownerToken,
+      ])
     )
   );
 }
