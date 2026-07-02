@@ -35,12 +35,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
       final api = context.read<ApiClient>();
       
       await api.dio.post('/promo/validate', data: {'code': code});
+      if (!mounted) return;
       setState(() {
         _appliedPromoCode = code;
         _promoMessage = 'Promo code applied successfully!';
         _isApplyingPromo = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _promoMessage = 'Invalid promo code';
         _isApplyingPromo = false;
@@ -176,7 +178,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ),
                           onPressed: _processPayment,
                           icon: const Icon(Icons.check_circle_outline),
-                          label: const Text('Pay Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          label: Text('Pay Now', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
