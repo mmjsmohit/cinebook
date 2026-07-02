@@ -119,12 +119,12 @@ If it fights you, cut it — §6's rich widgets already cover the core UX. Do **
 
 ## 10. Definition of done
 
-- [ ] Chat streams token-by-token from `/agent/run`.
-- [ ] Tool calls show a shimmer, then resolve into the correct rich widget per `renderHint`.
-- [ ] Booking context (held seats, running total) stays in sync via state events.
-- [ ] Book/pay is gated by a confirmation dialog.
-- [ ] Stop button cancels cleanly and finalizes the partial message.
-- [ ] Full conversational booking works end-to-end inside the customer app.
+- [x] Chat streams token-by-token from `/agent/run`.
+- [x] Tool calls show a shimmer, then resolve into the correct rich widget per `renderHint`.
+- [x] Booking context (held seats, running total) stays in sync via state events.
+- [x] Book/pay is gated by a confirmation dialog.
+- [x] Stop button cancels cleanly and finalizes the partial message.
+- [x] Full conversational booking works end-to-end inside the customer app.
 
 ---
 

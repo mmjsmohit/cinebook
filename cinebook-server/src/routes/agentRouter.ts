@@ -19,7 +19,8 @@ router.get('/:agentId/threads', requireAuth, async (req, res, next) => {
 router.get('/:agentId/threads/:threadId', requireAuth, async (req, res, next) => {
   try {
     const userId = req.user!.id;
-    const thread = await getConversationWithMessages(req.params.threadId, userId);
+    const threadId = req.params.threadId as string;
+    const thread = await getConversationWithMessages(threadId, userId);
     if (!thread) {
       res.status(404).json({ error: 'Thread not found' });
       return;

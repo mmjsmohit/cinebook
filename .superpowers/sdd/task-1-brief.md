@@ -1,120 +1,79 @@
-## Task 1: Install dependencies + add schemas for agent tool inputs
+### Task 1: Backend API - Thread Endpoints
 
 **Files:**
-- Modify: `cinebook-server/package.json`
-- Modify: `cinebook-server/src/schemas/index.ts`
-- Modify: `cinebook-server/.env`
+- Modify: `cinebook-server/src/agent/conversationService.ts`
+- Modify: `cinebook-server/src/routes/agentRouter.ts`
 
 **Interfaces:**
-- Produces:
-  - `agentRunSchema` — Zod schema for `POST /agent/run` body: `{ message: string, threadId?: string }`
-  - All tool-specific input schemas exported from `src/schemas/index.ts`
+- Produces: `GET /api/agents/:agentId/threads` (returns `Conversation[]`)
+- Produces: `GET /api/agents/:agentId/threads/:threadId` (returns `{ id, messages: Message[] }`)
 
-- [ ] **Step 1: Install `ai@^7` and `@openrouter/ai-sdk-provider@^2.10`**
+- [ ] **Step 1: Add query functions to conversationService.ts**
 
-  ```bash
-  cd /Users/mohittiwari/Dev/Cinebook/cinebook-server
-  npm install ai@^7 @openrouter/ai-sdk-provider@^2.10
-  ```
+Open `cinebook-server/src/agent/conversationService.ts` and add these two functions at the bottom:
 
-  Expected: `added N packages` with no peer-dependency errors. If you see a `specificationVersion` mismatch, run `npm install ai@latest @openrouter/ai-sdk-provider@latest` to align.
-
-- [ ] **Step 2: Verify the installed versions are compatible**
-
-  ```bash
-  node --input-type=module <<< "import { streamText } from 'ai'; console.log('OK:', typeof streamText);"
-  ```
-
-  Expected: `OK: function`
-
-- [ ] **Step 3: Add `OPENROUTER_API_KEY` to `.env`**
-
-  Append to `cinebook-server/.env`:
-  ```
-  OPENROUTER_API_KEY=your_key_here
-  ```
-
-- [ ] **Step 4: Add agent-specific Zod schemas to `src/schemas/index.ts`**
-
-  Append to the bottom of `src/schemas/index.ts`:
-
-  ```typescript
-  // ─── Agent / Chat Schemas ────────────────────────────────────────────────────
-
-  export const agentRunSchema = z.object({
-    message: z.string().min(1).max(4000),
-    threadId: z.string().optional(),
+```typescript
+export async function getConversationsForUser(userId: string) {
+  return prisma.conversation.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
   });
+}
 
-  export const delegateSchema = z.object({
-    request: z.string(),
-    userId: z.string(),
+export async function getConversationWithMessages(conversationId: string, userId: string) {
+  return prisma.conversation.findFirst({
+    where: { id: conversationId, userId },
+    include: {
+      messages: {
+        orderBy: { createdAt: 'asc' },
+      },
+    },
   });
+}
+```
 
-  // Tool-specific input schemas (reused as tool inputSchema)
+- [ ] **Step 2: Add API routes to agentRouter.ts**
 
-  export const getMovieDetailsSchema = z.object({ movieId: z.string() });
-  export const getCastSchema = z.object({ movieId: z.string() });
-  export const getReviewsSchema = z.object({ movieId: z.string() });
-  export const suggestSimilarSchema = z.object({ movieId: z.string() });
-  export const getScreenInfoSchema = z.object({ screenId: z.string() });
-  export const checkSeatAvailabilitySchema = z.object({ showId: z.string() });
+Open `cinebook-server/src/routes/agentRouter.ts`. Add imports for the new functions and define the routes before the existing `/:agentId/run` route to avoid parameter conflicts.
 
-  export const holdSeatsToolSchema = z.object({
-    showId: z.string(),
-    seatIds: z.array(z.string()).min(1).max(10),
-  });
+```typescript
+import { runAgent } from '../agent/orchestrator.js';
+import { requireAuth } from '../middlewares/authMiddleware.js';
+import { getConversationsForUser, getConversationWithMessages } from '../agent/conversationService.js';
 
-  export const releaseSeatsToolSchema = z.object({
-    showId: z.string(),
-    seatIds: z.array(z.string()).min(1).max(10),
-    holdToken: z.string(),
-  });
+const router = Router();
 
-  export const createBookingToolSchema = z.object({
-    showId: z.string(),
-    seatIds: z.array(z.string()).min(1).max(10),
-    holdToken: z.string(),
-    promoCode: z.string().optional(),
-  });
+router.get('/:agentId/threads', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const threads = await getConversationsForUser(userId);
+    res.json(threads);
+  } catch (err) {
+    next(err);
+  }
+});
 
-  export const checkBookingStatusSchema = z.object({ bookingId: z.string() });
-  export const cancelBookingToolSchema = z.object({ bookingId: z.string() });
+router.get('/:agentId/threads/:threadId', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const thread = await getConversationWithMessages(req.params.threadId, userId);
+    if (!thread) {
+      res.status(404).json({ error: 'Thread not found' });
+      return;
+    }
+    res.json(thread);
+  } catch (err) {
+    next(err);
+  }
+});
+```
 
-  export const startPaymentToolSchema = z.object({
-    bookingId: z.string(),
-    cardNumber: z.string().min(4).max(19).default('4000'),
-  });
+- [ ] **Step 3: Commit backend changes**
 
-  export const updatePreferencesSchema = z.object({
-    prefs: z.record(z.unknown()),
-  });
-
-  export const contactSupportSchema = z.object({
-    message: z.string(),
-    category: z.enum(['booking', 'payment', 'general']).default('general'),
-  });
-
-  // Type exports
-  export type AgentRunInput = z.infer<typeof agentRunSchema>;
-  export type DelegateInput = z.infer<typeof delegateSchema>;
-  ```
-
-- [ ] **Step 5: Verify TypeScript compiles**
-
-  ```bash
-  cd /Users/mohittiwari/Dev/Cinebook/cinebook-server
-  npx tsc --noEmit
-  ```
-
-  Expected: no errors.
-
-- [ ] **Step 6: Commit**
-
-  ```bash
-  git add package.json package-lock.json src/schemas/index.ts .env
-  git commit -m "feat(phase3): install ai sdk v7 + add agent input schemas"
-  ```
+```bash
+git add cinebook-server/src/agent/conversationService.ts cinebook-server/src/routes/agentRouter.ts
+git commit -m "feat(api): add thread history endpoints"
+```
 
 ---
 
