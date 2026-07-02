@@ -18,6 +18,7 @@ import bookingsRouter, { myBookingsRouter } from './http/bookings.js';
 import paymentsRouter from './http/payments.js';
 import promoRouter from './http/promo.js';
 import agentRouter from './routes/agentRouter.js';
+import adminRouter from './http/admin.js';
 
 const app = express();
 
@@ -55,6 +56,9 @@ app.use('/me/screens', myScreensRouter);
 
 // Hall-manager show management (PATCH/DELETE /shows/:id)
 app.use('/shows', showsManageRouter);
+
+// Admin dashboard routes
+app.use('/admin', adminRouter);
 
 // ── Error handler (must be last) ─────────────────────────────────────────────
 app.use(errorHandler);
