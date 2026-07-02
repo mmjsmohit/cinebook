@@ -33,3 +33,11 @@
 
 ## Issues or concerns
 - None. The schema is sound and the seed data properly models a realistic application state.
+
+## Fix Report
+- Removed `"z"` dependency from `cinebook-server/package.json`.
+- Added Node version enforcement `"engines": { "node": ">=22" }` to `cinebook-server/package.json`.
+- Changed `"type": "commonjs"` to `"type": "module"` in `cinebook-server/package.json`.
+- Added cleanup for `Message`, `Conversation`, and `AdminActivityLog` to `cinebook-server/prisma/seed.ts`.
+- Ran `npx tsx prisma/seed.ts` inside `cinebook-server` to verify the build isn't broken.
+  - Test command output ended with: `Seeding finished successfully.`

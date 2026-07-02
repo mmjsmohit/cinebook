@@ -13,7 +13,9 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
     return;
   }
 
-  console.error(err);
+  if (process.env.NODE_ENV !== 'test') {
+    console.error(err);
+  }
   res.status(500).json({
     error: {
       code: 'INTERNAL_SERVER_ERROR',
