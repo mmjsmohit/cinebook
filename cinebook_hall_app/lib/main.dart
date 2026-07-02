@@ -28,12 +28,7 @@ class CinebookHallApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'CineBook Hall Manager',
-      theme: ThemeData.dark(useMaterial3: true).copyWith(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepOrange,
-          brightness: Brightness.dark,
-        ),
-      ),
+      theme: CinemaTheme.darkTheme,
       home: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           if (state is AuthInitial) {
