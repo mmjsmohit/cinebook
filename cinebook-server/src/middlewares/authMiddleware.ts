@@ -13,7 +13,11 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
   const token = authHeader.split(' ')[1];
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { sub: string; role: string; jti: string };
+    const payload = jwt.verify(token, JWT_SECRET) as { sub: string; role: string; jti: string; type?: string };
+    if (payload.type !== 'access') {
+      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Invalid token type' } });
+      return;
+    }
     req.user = { id: payload.sub, role: payload.role };
     next();
   } catch (error) {
