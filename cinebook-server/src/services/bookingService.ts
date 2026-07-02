@@ -105,7 +105,18 @@ export async function getBookingById(bookingId: string, userId: string, role: st
   logger.info('bookingService.getBookingById', { bookingId, userId });
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
-    include: { seats: true, payment: true },
+    include: { 
+      seats: { include: { seat: true } }, 
+      payment: true,
+      show: {
+        include: {
+          movie: true,
+          screen: {
+            include: { theatre: true }
+          }
+        }
+      }
+    },
   });
   if (!booking) return null;
   if (booking.userId !== userId && role !== 'ADMIN') return null;

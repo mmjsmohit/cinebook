@@ -113,6 +113,7 @@ model Seat {
   row      String
   number   Int
   category SeatCategory
+  bookedSeats BookedSeat[]
 
   @@unique([screenId, row, number])
 }
@@ -129,6 +130,7 @@ model Show {
   language    String
   format      String
   bookedSeats BookedSeat[]
+  bookings    Booking[]
 
   @@index([screenId, startTime])
 }
@@ -138,6 +140,7 @@ model Booking {
   userId    String
   showId    String
   user      User          @relation(fields: [userId], references: [id])
+  show      Show          @relation(fields: [showId], references: [id])
   status    BookingStatus @default(PENDING)
   totalCost Int
   seats     BookedSeat[]
@@ -153,6 +156,7 @@ model BookedSeat {
   pricePaid Int
   booking   Booking @relation(fields: [bookingId], references: [id])
   show      Show    @relation(fields: [showId], references: [id])
+  seat      Seat    @relation(fields: [seatId], references: [id])
 
   @@unique([showId, seatId]) // DB-level double-booking guard
 }

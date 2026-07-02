@@ -25,7 +25,7 @@ class _ScreensListScreenState extends State<ScreensListScreen> {
       final api = context.read<ApiClient>();
       final res = await api.dio.get('/me/screens');
       setState(() {
-        _screens = res.data;
+        _screens = res.data['screens'];
         _isLoading = false;
       });
     } catch (e) {

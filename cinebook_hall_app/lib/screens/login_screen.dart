@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
         context.read<AuthBloc>().add(AuthLoggedIn(
           accessToken: res.data['accessToken'],
           refreshToken: res.data['refreshToken'],
-          role: res.data['role'],
+          role: res.data['user']['role'],
         ));
       }
     } catch (e) {

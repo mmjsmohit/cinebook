@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx src/server.ts",
+    "dev": "concurrently \"tsx src/server.ts\" \"cloudflared tunnel --loglevel error run --url http://localhost:3000 cinebook\"",
+    "dev:local": "tsx src/server.ts",
     "test": "npx tsx test-auth.ts"
   },
   "keywords": [],
@@ -34,6 +35,7 @@
     "@types/node": "^26.1.0",
     "@types/supertest": "^7.2.0",
     "@types/uuid": "^10.0.0",
+    "concurrently": "^10.0.3",
     "prisma": "^5.22.0",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",

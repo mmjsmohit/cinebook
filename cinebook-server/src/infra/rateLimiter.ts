@@ -85,7 +85,7 @@ export function createRateLimiter(opts: RateLimitOptions) {
 
 /** Pre-built limiters for well-known endpoints */
 export const bookingRateLimiter = createRateLimiter({
-  limit: 5,
+  limit: 500,
   windowSeconds: 3600,
   keyPrefix: 'ratelimit:booking',
 });

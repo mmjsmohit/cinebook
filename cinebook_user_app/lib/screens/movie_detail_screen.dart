@@ -26,10 +26,10 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     try {
       final api = context.read<ApiClient>();
       final res = await api.dio.get('/movies/${widget.movieId}');
-      final revRes = await api.dio.get('/reviews?movieId=${widget.movieId}');
+      final revRes = await api.dio.get('/movies/${widget.movieId}/reviews');
       setState(() {
-        _movie = res.data;
-        _reviews = revRes.data;
+        _movie = res.data['movie'];
+        _reviews = revRes.data['reviews'];
         _isLoading = false;
       });
     } catch (e) {
