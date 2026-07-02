@@ -23,13 +23,15 @@ class _TheatresScreenState extends State<TheatresScreen> {
     try {
       final api = context.read<ApiClient>();
       final res = await api.dio.get('/theatres');
+      if (!mounted) return;
       setState(() {
         _theatres = res.data['theatres'] ?? [];
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
