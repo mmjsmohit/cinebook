@@ -70,7 +70,8 @@ class _AgentScreenState extends State<AgentScreen> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (ctx) =>
-          ChatBloc(apiClient: ctx.read<ApiClient>(), controller: _controller)..add(ChatFetchThreads()),
+          ChatBloc(apiClient: ctx.read<ApiClient>(), controller: _controller)
+            ..add(ChatFetchThreads()),
       child: BlocListener<ChatBloc, ChatState>(
         listenWhen: (previous, current) =>
             previous.error != current.error && current.error != null,
@@ -90,9 +91,9 @@ class _AgentScreenState extends State<AgentScreen> {
                   IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: () {
-                       bloc.add(ChatClearHistory());
+                      bloc.add(ChatClearHistory());
                     },
-                  )
+                  ),
                 ],
               ),
               drawer: Drawer(
@@ -101,7 +102,13 @@ class _AgentScreenState extends State<AgentScreen> {
                     children: [
                       const Padding(
                         padding: EdgeInsets.all(16.0),
-                        child: Text('Past Threads', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        child: Text(
+                          'Past Threads',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                       if (state.isLoadingThreads)
                         const CircularProgressIndicator(),
@@ -111,8 +118,12 @@ class _AgentScreenState extends State<AgentScreen> {
                           itemBuilder: (context, index) {
                             final thread = state.threads[index];
                             return ListTile(
-                              title: Text('Thread ${thread['id'].toString().substring(0, 8)}'),
-                              subtitle: Text(thread['createdAt'].toString().substring(0, 10)),
+                              title: Text(
+                                'Thread ${thread['id'].toString().substring(0, 8)}',
+                              ),
+                              subtitle: Text(
+                                thread['createdAt'].toString().substring(0, 10),
+                              ),
                               onTap: () {
                                 Navigator.pop(context); // close drawer
                                 bloc.add(ChatSwitchThread(thread['id']));
@@ -127,7 +138,8 @@ class _AgentScreenState extends State<AgentScreen> {
               ),
               body: Column(
                 children: [
-                  if (state.bookingContext.containsKey('holdToken') || state.bookingContext.containsKey('heldSeatIds'))
+                  if (state.bookingContext.containsKey('holdToken') ||
+                      state.bookingContext.containsKey('heldSeatIds'))
                     Container(
                       padding: const EdgeInsets.all(12),
                       color: Colors.amber.shade100,
@@ -153,21 +165,26 @@ class _AgentScreenState extends State<AgentScreen> {
                       currentUser: _currentUser,
                       aiUser: _aiUser,
                       controller: _controller,
-                      onSendMessage: (msg) => bloc.add(ChatSendMessage(msg.text)),
+                      onSendMessage: (msg) =>
+                          bloc.add(ChatSendMessage(msg.text)),
                       onCancelGenerating: () => bloc.add(ChatCancelMessage()),
                       loadingConfig: LoadingConfig(isLoading: state.isLoading),
                       enableMarkdownStreaming: true,
-                      streamingWordByWord: true,
+                      streamingWordByWord: false,
                       streamingDuration: const Duration(milliseconds: 30),
                       resultRenderers: {
                         'a2ui': (ctx, data) {
                           return A2UiForm(
                             data: data,
                             onSubmit: (values) {
-                              bloc.add(ChatSendMessage(jsonEncode({
-                                'event': 'booking_preferences_submitted',
-                                'data': values,
-                              })));
+                              bloc.add(
+                                ChatSendMessage(
+                                  jsonEncode({
+                                    'event': 'booking_preferences_submitted',
+                                    'data': values,
+                                  }),
+                                ),
+                              );
                             },
                           );
                         },
@@ -184,14 +201,18 @@ class _AgentScreenState extends State<AgentScreen> {
                               _buildBookingSummary(data),
                               const SizedBox(height: 8),
                               FilledButton(
-                                onPressed: () =>
-                                    _showConfirmationDialog(context, bloc, data),
+                                onPressed: () => _showConfirmationDialog(
+                                  context,
+                                  bloc,
+                                  data,
+                                ),
                                 child: const Text('Confirm Booking'),
                               ),
                             ],
                           );
                         },
-                        'paymentResult': (ctx, data) => _buildPaymentResult(data),
+                        'paymentResult': (ctx, data) =>
+                            _buildPaymentResult(data),
                       },
                     ),
                   ),
@@ -229,14 +250,21 @@ class _AgentScreenState extends State<AgentScreen> {
                             movie['posterUrl'],
                             fit: BoxFit.cover,
                             width: double.infinity,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: Colors.grey[800],
-                              child: const Icon(Icons.movie, color: Colors.white54),
-                            ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  color: Colors.grey[800],
+                                  child: const Icon(
+                                    Icons.movie,
+                                    color: Colors.white54,
+                                  ),
+                                ),
                           )
                         : Container(
                             color: Colors.grey[800],
-                            child: const Icon(Icons.movie, color: Colors.white54),
+                            child: const Icon(
+                              Icons.movie,
+                              color: Colors.white54,
+                            ),
                           ),
                   ),
                 ),
