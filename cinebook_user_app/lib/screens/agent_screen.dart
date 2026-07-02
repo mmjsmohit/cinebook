@@ -5,6 +5,8 @@ import 'package:cinebook_core/cinebook_core.dart';
 import '../blocs/chat/chat_bloc.dart';
 import '../blocs/chat/chat_event.dart';
 import '../blocs/chat/chat_state.dart';
+import '../widgets/a2ui_form.dart';
+import 'dart:convert';
 
 class AgentScreen extends StatefulWidget {
   const AgentScreen({super.key});
@@ -157,6 +159,17 @@ class _AgentScreenState extends State<AgentScreen> {
                       streamingWordByWord: true,
                       streamingDuration: const Duration(milliseconds: 30),
                       resultRenderers: {
+                        'a2ui': (ctx, data) {
+                          return A2UiForm(
+                            data: data,
+                            onSubmit: (values) {
+                              bloc.add(ChatSendMessage(jsonEncode({
+                                'event': 'booking_preferences_submitted',
+                                'data': values,
+                              })));
+                            },
+                          );
+                        },
                         'movieList': (ctx, data) => _buildMovieList(data),
                         'movieCard': (ctx, data) => _buildMovieCard(data),
                         'showtimes': (ctx, data) => _buildShowtimes(data),
