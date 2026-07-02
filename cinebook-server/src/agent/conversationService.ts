@@ -47,13 +47,15 @@ export async function saveHistory(
   conversationId: string,
   messages: ModelMessage[]
 ): Promise<void> {
+  const now = Date.now();
   await prisma.$transaction(async (tx) => {
     await tx.message.deleteMany({ where: { conversationId } });
     await tx.message.createMany({
-      data: messages.map((m) => ({
+      data: messages.map((m, idx) => ({
         conversationId,
         role: m.role,
         content: m.content as object,
+        createdAt: new Date(now + idx * 1000), // Offset by 1s each to preserve order
       })),
     });
   });
@@ -72,7 +74,10 @@ export async function getConversationWithMessages(conversationId: string, userId
     where: { id: conversationId, userId },
     include: {
       messages: {
-        orderBy: { createdAt: 'asc' },
+        orderBy: [
+          { createdAt: 'asc' },
+          { id: 'asc' },
+        ],
       },
     },
   });

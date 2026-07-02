@@ -149,6 +149,7 @@ class _AgentScreenState extends State<AgentScreen> {
                     ),
                   Expanded(
                     child: AiChatWidget(
+                      key: ValueKey(state.threadId ?? 'new'),
                       currentUser: _currentUser,
                       aiUser: _aiUser,
                       controller: _controller,
