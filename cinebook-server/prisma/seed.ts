@@ -163,10 +163,11 @@ async function main() {
   const screens = [];
 
   for (let i = 0; i < chains.length; i++) {
+    const chain = chains[i]!;
     const theatre = await prisma.theatre.create({
       data: {
-        chain: chains[i],
-        name: `${chains[i]} Cinemas, City Center`,
+        chain,
+        name: `${chain} Cinemas, City Center`,
         city: 'Metropolis',
         address: `${100 + i} Main St, Metropolis`,
       }
@@ -189,7 +190,7 @@ async function main() {
       const seatRows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
       const seatsToCreate = [];
       for (const row of seatRows) {
-        let category = SeatCategory.STANDARD;
+        let category: SeatCategory = SeatCategory.STANDARD;
         if (row === 'A' || row === 'B') category = SeatCategory.FRONT;
         else if (row === 'I' || row === 'J') category = SeatCategory.PREMIUM;
         
@@ -220,7 +221,7 @@ async function main() {
     // Add some shows for each screen
     for (const screen of screens) {
       // Pick a random movie
-      const movie = movies[Math.floor(Math.random() * movies.length)];
+      const movie = movies[Math.floor(Math.random() * movies.length)]!;
       
       const showTimes = [
         { hour: 10, min: 0 },
@@ -243,7 +244,7 @@ async function main() {
             startTime,
             endTime,
             basePrice: 20000, // 200 INR
-            language: movie.languages[0],
+            language: movie.languages[0] ?? 'English',
             format: screen.format,
           }
         });

@@ -11,9 +11,18 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
   }
 
   const token = authHeader.split(' ')[1];
+  if (!token) {
+    res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing token' } });
+    return;
+  }
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { sub: string; role: Role; jti: string; type?: string };
+    const payload = jwt.verify(token, JWT_SECRET) as unknown as {
+      sub: string;
+      role: Role;
+      jti: string;
+      type?: string;
+    };
     if (payload.type !== 'access') {
       res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Invalid token type' } });
       return;
