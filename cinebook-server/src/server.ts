@@ -26,6 +26,10 @@ app.use(express.json());
 app.use(correlationMiddleware()); // Attaches correlationId to every request
 
 // ── Routes ───────────────────────────────────────────────────────────────────
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.use('/auth', authRoutes);
 
 // Browse / public

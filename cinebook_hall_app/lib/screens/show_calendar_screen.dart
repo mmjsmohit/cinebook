@@ -29,7 +29,7 @@ class _ShowCalendarScreenState extends State<ShowCalendarScreen> {
       final api = context.read<ApiClient>();
       final res = await api.dio.get('/screens/${widget.screenId}/shows'); 
       setState(() {
-        _shows = res.data;
+        _shows = res.data['shows'];
         _isLoading = false;
       });
     } catch (e) {

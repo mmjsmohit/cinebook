@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final api = context.read<ApiClient>();
       final res = await api.dio.get('/movies');
       setState(() {
-        _movies = res.data;
+        _movies = res.data['movies'];
         _isLoading = false;
       });
     } catch (e) {

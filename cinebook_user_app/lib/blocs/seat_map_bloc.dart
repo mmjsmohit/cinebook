@@ -5,7 +5,7 @@ import 'package:cinebook_core/cinebook_core.dart';
 abstract class SeatMapEvent {}
 class LoadSeats extends SeatMapEvent { final String showId; LoadSeats(this.showId); }
 class RefreshSeats extends SeatMapEvent {}
-class HoldSeat extends SeatMapEvent { final String seatId; HoldSeat(this.seatId); }
+class ToggleSeatSelection extends SeatMapEvent { final String seatId; ToggleSeatSelection(this.seatId); }
 class SeatHoldExpired extends SeatMapEvent { final String seatId; SeatHoldExpired(this.seatId); }
 class StopPolling extends SeatMapEvent {}
 
@@ -46,18 +46,14 @@ class SeatMapBloc extends Bloc<SeatMapEvent, SeatMapState> {
       await _fetchSeats(emit);
     });
 
-    on<HoldSeat>((event, emit) async {
-      if (_currentShowId == null) return;
-      try {
-        await api.dio.post('/shows/$_currentShowId/holds', data: {'seatIds': [event.seatId]});
-        final newHolds = Map<String, DateTime>.from(state.heldSeats);
+    on<ToggleSeatSelection>((event, emit) {
+      final newHolds = Map<String, DateTime>.from(state.heldSeats);
+      if (newHolds.containsKey(event.seatId)) {
+        newHolds.remove(event.seatId);
+      } else {
         newHolds[event.seatId] = DateTime.now().add(const Duration(minutes: 5));
-        emit(state.copyWith(heldSeats: newHolds));
-        add(RefreshSeats());
-      } catch (e) {
-        emit(state.copyWith(error: 'Failed to hold seat or seat taken.'));
-        add(RefreshSeats());
       }
+      emit(state.copyWith(heldSeats: newHolds));
     });
 
     on<SeatHoldExpired>((event, emit) {
@@ -76,7 +72,7 @@ class SeatMapBloc extends Bloc<SeatMapEvent, SeatMapState> {
     if (_currentShowId == null) return;
     try {
       final res = await api.dio.get('/shows/$_currentShowId/seats');
-      emit(state.copyWith(seats: res.data, isLoading: false, error: null));
+      emit(state.copyWith(seats: res.data['seats'], isLoading: false, error: null));
     } catch (e) {
       emit(state.copyWith(error: e.toString(), isLoading: false));
     }

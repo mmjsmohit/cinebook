@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cinebook_core/cinebook_core.dart';
+import 'package:intl/intl.dart';
 import 'seat_map_screen.dart';
 
 class ShowtimesScreen extends StatefulWidget {
@@ -14,6 +15,7 @@ class ShowtimesScreen extends StatefulWidget {
 class _ShowtimesScreenState extends State<ShowtimesScreen> {
   List<dynamic> _shows = [];
   bool _isLoading = true;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -22,11 +24,13 @@ class _ShowtimesScreenState extends State<ShowtimesScreen> {
   }
 
   Future<void> _fetchShows() async {
+    setState(() => _isLoading = true);
     try {
       final api = context.read<ApiClient>();
-      final res = await api.dio.get('/shows?movieId=${widget.movieId}');
+      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+      final res = await api.dio.get('/shows?movieId=${widget.movieId}&date=$dateStr');
       setState(() {
-        _shows = res.data;
+        _shows = res.data['shows'];
         _isLoading = false;
       });
     } catch (e) {
@@ -35,28 +39,128 @@ class _ShowtimesScreenState extends State<ShowtimesScreen> {
     }
   }
 
+  Map<String, List<dynamic>> _groupShowsByTheatre() {
+    final Map<String, List<dynamic>> grouped = {};
+    for (final show in _shows) {
+      final theatreName = show['screen']?['theatre']?['name'] ?? 'Unknown Theatre';
+      if (!grouped.containsKey(theatreName)) {
+        grouped[theatreName] = [];
+      }
+      grouped[theatreName]!.add(show);
+    }
+    return grouped;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final groupedShows = _groupShowsByTheatre();
+    
     return Scaffold(
-      appBar: AppBar(title: const Text('Showtimes')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: _shows.length,
+      appBar: AppBar(title: const Text('Select Theatre & Show')),
+      body: Column(
+        children: [
+          // Date Picker
+          Container(
+            height: 70,
+            color: Theme.of(context).cardColor,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: 7,
               itemBuilder: (context, index) {
-                final show = _shows[index];
-                return ListTile(
-                  title: Text(show['screen']?['name'] ?? 'Screen'),
-                  subtitle: Text('${show['startTime']} - ${show['language']} ${show['format']}'),
-                  trailing: const Icon(Icons.chevron_right),
+                final date = DateTime.now().add(Duration(days: index));
+                final isSelected = date.day == _selectedDate.day && date.month == _selectedDate.month;
+                return GestureDetector(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => SeatMapScreen(showId: show['id']),
-                    ));
+                    setState(() => _selectedDate = date);
+                    _fetchShows();
                   },
+                  child: Container(
+                    width: 60,
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(DateFormat('EEE').format(date).toUpperCase(), style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Colors.grey)),
+                        Text(DateFormat('dd').format(date), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : null)),
+                        Text(DateFormat('MMM').format(date).toUpperCase(), style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Colors.grey)),
+                      ],
+                    ),
+                  ),
                 );
               },
             ),
+          ),
+          const Divider(height: 1),
+          // Shows
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _shows.isEmpty
+                    ? const Center(child: Text('No shows available for this date'))
+                    : ListView.builder(
+                        itemCount: groupedShows.length,
+                        itemBuilder: (context, index) {
+                          final theatreName = groupedShows.keys.elementAt(index);
+                          final shows = groupedShows[theatreName]!;
+                          return Card(
+                            margin: const EdgeInsets.all(8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.favorite_border, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(child: Text(theatreName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                                      const Icon(Icons.info_outline, size: 20, color: Colors.grey),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: shows.map((show) {
+                                      final startTime = DateTime.parse(show['startTime']).toLocal();
+                                      final timeStr = DateFormat('hh:mm a').format(startTime);
+                                      return InkWell(
+                                        onTap: () {
+                                          Navigator.push(context, MaterialPageRoute(
+                                            builder: (_) => SeatMapScreen(showId: show['id']),
+                                          ));
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color: Colors.green),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Text(timeStr, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                                              const SizedBox(height: 4),
+                                              Text('${show['format']} ${show['language']}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  )
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }

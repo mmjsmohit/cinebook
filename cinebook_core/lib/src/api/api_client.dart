@@ -20,7 +20,7 @@ class ApiClient {
 
   ApiClient({
     required this.tokenStorage,
-    this.baseUrl = 'http://localhost:3000',
+    this.baseUrl = 'https://cinebook.mohittiwari.dev',
     this.onUnauthenticated,
   }) : dio = Dio(BaseOptions(baseUrl: baseUrl)) {
     dio.interceptors.add(InterceptorsWrapper(

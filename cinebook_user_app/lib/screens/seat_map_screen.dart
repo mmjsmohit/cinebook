@@ -25,6 +25,43 @@ class _SeatMapView extends StatefulWidget {
 }
 
 class _SeatMapViewState extends State<_SeatMapView> {
+  
+  Map<String, Map<String, List<dynamic>>> _groupSeats(List<dynamic> seats) {
+    // category -> row -> list of seats
+    final Map<String, Map<String, List<dynamic>>> grouped = {};
+    for (final seat in seats) {
+      final category = seat['category'] ?? 'UNKNOWN';
+      final row = seat['row'] ?? '';
+      if (!grouped.containsKey(category)) grouped[category] = {};
+      if (!grouped[category]!.containsKey(row)) grouped[category]![row] = [];
+      grouped[category]![row]!.add(seat);
+    }
+    
+    // Sort rows alphabetically, and seats by number
+    for (final category in grouped.keys) {
+      final sortedRows = grouped[category]!.keys.toList()..sort();
+      final Map<String, List<dynamic>> sortedRowMap = {};
+      for (final row in sortedRows) {
+        final rowSeats = grouped[category]![row]!;
+        rowSeats.sort((a, b) => (a['number'] as int).compareTo(b['number'] as int));
+        sortedRowMap[row] = rowSeats;
+      }
+      grouped[category] = sortedRowMap;
+    }
+    
+    return grouped;
+  }
+
+  int _calculateTotal(List<dynamic> seats, Map<String, DateTime> heldSeats) {
+    int total = 0;
+    for (final seat in seats) {
+      if (heldSeats.containsKey(seat['id'])) {
+        total += (seat['price'] as num).toInt();
+      }
+    }
+    return total;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,59 +79,142 @@ class _SeatMapViewState extends State<_SeatMapView> {
             return const Center(child: CircularProgressIndicator());
           }
 
+          final groupedSeats = _groupSeats(state.seats);
+          final totalPrice = _calculateTotal(state.seats, state.heldSeats);
+
           return Column(
             children: [
               Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 8,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                  ),
-                  itemCount: state.seats.length,
-                  itemBuilder: (context, index) {
-                    final seat = state.seats[index];
-                    final seatId = seat['id'];
-                    final status = seat['status']; // free, held, booked
-                    final category = seat['category'];
-                    final isMyHold = state.heldSeats.containsKey(seatId);
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Column(
+                    children: groupedSeats.entries.map((catEntry) {
+                      final category = catEntry.key;
+                      final rowMap = catEntry.value;
+                      
+                      // Get price from first seat in category
+                      final sampleSeat = rowMap.values.first.first;
+                      final price = sampleSeat['price'];
 
-                    Color seatColor = Colors.grey;
-                    if (status == 'booked') seatColor = Colors.red;
-                    else if (status == 'held' && !isMyHold) seatColor = Colors.orange;
-                    else if (isMyHold) seatColor = Colors.green;
-                    else if (category == 'PREMIUM') seatColor = Colors.blue;
-
-                    return GestureDetector(
-                      onTap: status == 'free' ? () {
-                        context.read<SeatMapBloc>().add(HoldSeat(seatId));
-                      } : null,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: seatColor,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${seat['row']}${seat['number']}',
-                            style: const TextStyle(fontSize: 10),
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+                            child: Text(
+                              'Rs.$price  $category',
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white70),
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  },
+                          const Divider(height: 1, color: Colors.white24),
+                          const SizedBox(height: 16),
+                          ...rowMap.entries.map((rowEntry) {
+                            final row = rowEntry.key;
+                            final seatsInRow = rowEntry.value;
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 24,
+                                    child: Text(row, style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.bold)),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: seatsInRow.map((seat) {
+                                        final seatId = seat['id'];
+                                        final seatState = seat['state']; // Fixed bug here!
+                                        final isMyHold = state.heldSeats.containsKey(seatId);
+
+                                        Color bgColor = Colors.transparent;
+                                        Color borderColor = Colors.green;
+                                        Color textColor = Colors.green;
+
+                                        if (seatState == 'booked') {
+                                          bgColor = Colors.grey.shade800;
+                                          borderColor = Colors.grey.shade800;
+                                          textColor = Colors.grey.shade600;
+                                        } else if (seatState == 'held' && !isMyHold) {
+                                          bgColor = Colors.grey.shade800;
+                                          borderColor = Colors.grey.shade800;
+                                          textColor = Colors.grey.shade600;
+                                        } else if (isMyHold) {
+                                          bgColor = Colors.green;
+                                          textColor = Colors.white;
+                                        }
+
+                                        return GestureDetector(
+                                          onTap: seatState == 'free' ? () {
+                                            context.read<SeatMapBloc>().add(ToggleSeatSelection(seatId));
+                                          } : null,
+                                          child: Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                              color: bgColor,
+                                              border: Border.all(color: borderColor),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                '${seat['number']}',
+                                                style: TextStyle(fontSize: 12, color: textColor, fontWeight: FontWeight.bold),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ],
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
+              
+              // Legend
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildLegendItem('Available', Colors.transparent, Colors.green),
+                    const SizedBox(width: 16),
+                    _buildLegendItem('Selected', Colors.green, Colors.green),
+                    const SizedBox(width: 16),
+                    _buildLegendItem('Sold', Colors.grey.shade800, Colors.grey.shade800),
+                  ],
+                ),
+              ),
+
+              // Bottom Bar
               if (state.heldSeats.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.all(16),
-                  color: Colors.black26,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('${state.heldSeats.length} seats selected'),
-                      ElevatedButton(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))],
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.pink,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -106,15 +226,33 @@ class _SeatMapViewState extends State<_SeatMapView> {
                             ),
                           );
                         },
-                        child: const Text('Book'),
+                        child: Text('Pay ₹$totalPrice', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
-                    ],
+                    ),
                   ),
                 ),
             ],
           );
         },
       ),
+    );
+  }
+
+  Widget _buildLegendItem(String label, Color bgColor, Color borderColor) {
+    return Row(
+      children: [
+        Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            color: bgColor,
+            border: Border.all(color: borderColor),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(label, style: const TextStyle(fontSize: 12)),
+      ],
     );
   }
 }

@@ -21,17 +21,23 @@ class _PaymentScreenState extends State<PaymentScreen> {
     try {
       final api = context.read<ApiClient>();
       
+      final holdRes = await api.dio.post('/shows/${widget.showId}/holds', data: {
+        'seatIds': widget.seatIds,
+      });
+      final holdToken = holdRes.data['holdToken'];
+
       final bookRes = await api.dio.post('/bookings', data: {
         'showId': widget.showId,
         'seatIds': widget.seatIds,
+        'holdToken': holdToken,
       });
-      final bookingId = bookRes.data['id'];
+      final bookingId = bookRes.data['bookingId'];
 
       await Future.delayed(const Duration(seconds: 2));
 
       await api.dio.post('/payments', data: {
         'bookingId': bookingId,
-        'cardNumber': '4242', 
+        'cardNumber': '4000', 
       });
 
       if (mounted) {

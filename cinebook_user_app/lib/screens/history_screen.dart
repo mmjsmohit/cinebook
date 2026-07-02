@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cinebook_core/cinebook_core.dart';
+import 'booking_details_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -24,7 +25,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       final api = context.read<ApiClient>();
       final res = await api.dio.get('/me/bookings');
       setState(() {
-        _bookings = res.data;
+        _bookings = res.data['bookings'];
         _isLoading = false;
       });
     } catch (e) {
@@ -54,8 +55,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
               itemBuilder: (context, index) {
                 final b = _bookings[index];
                 return ListTile(
-                  title: Text('Booking ${b['id']}'),
+                  title: Text('Booking ${b['id'].toString().substring(0, 8)}...'),
                   subtitle: Text('Status: ${b['status']} | Cost: ₹${b['totalCost']}'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BookingDetailsScreen(bookingId: b['id']),
+                      ),
+                    );
+                  },
                   trailing: b['status'] == 'CONFIRMED'
                       ? TextButton(
                           onPressed: () => _cancelBooking(b['id']),

@@ -5,7 +5,7 @@
  */
 import { execSync } from 'child_process';
 
-const BASE = 'http://localhost:3000';
+const BASE = 'https://cinebook.mohittiwari.dev';
 
 let passed = 0;
 let failed = 0;

@@ -18,10 +18,16 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       final api = context.read<ApiClient>();
-      await api.dio.post('/auth/request-otp', data: {'phone': _phoneController.text});
+      await api.dio.post(
+        '/auth/request-otp',
+        data: {'phone': _phoneController.text},
+      );
       setState(() => _otpSent = true);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -31,19 +37,25 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       final api = context.read<ApiClient>();
-      final res = await api.dio.post('/auth/verify-otp', data: {
-        'phone': _phoneController.text,
-        'code': _otpController.text,
-      });
+      final res = await api.dio.post(
+        '/auth/verify-otp',
+        data: {'phone': _phoneController.text, 'code': _otpController.text},
+      );
       if (mounted) {
-        context.read<AuthBloc>().add(AuthLoggedIn(
-          accessToken: res.data['accessToken'],
-          refreshToken: res.data['refreshToken'],
-          role: res.data['role'],
-        ));
+        context.read<AuthBloc>().add(
+          AuthLoggedIn(
+            accessToken: res.data['accessToken'],
+            refreshToken: res.data['refreshToken'],
+            role: res.data['user']['role'],
+          ),
+        );
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     } finally {
       setState(() => _isLoading = false);
     }
@@ -73,11 +85,13 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
             const SizedBox(height: 24),
-            if (_isLoading) const CircularProgressIndicator()
-            else ElevatedButton(
-              onPressed: _otpSent ? _verifyOtp : _requestOtp,
-              child: Text(_otpSent ? 'Verify OTP' : 'Request OTP'),
-            ),
+            if (_isLoading)
+              const CircularProgressIndicator()
+            else
+              ElevatedButton(
+                onPressed: _otpSent ? _verifyOtp : _requestOtp,
+                child: Text(_otpSent ? 'Verify OTP' : 'Request OTP'),
+              ),
           ],
         ),
       ),
