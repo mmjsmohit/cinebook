@@ -1,43 +1,27 @@
-# Task 1: Bootstrapping Report
+# Task 1 Report
 
 ## What I implemented
-- Initialized the Node 22+ project (`cinebook-server`) with Typescript, Express, Prisma, Zod, Redis, etc.
-- Created `docker-compose.yml` for `postgres:16` and `redis:7`. (Used host port 5433 for Postgres to avoid conflicts with any local installations).
-- Defined the provided Prisma schema in `prisma/schema.prisma` and formatted it according to Prisma requirements. Fixed a missing back-relation for `Payment` to `Booking` which was preventing schema compilation.
-- Downgraded Prisma temporarily to `5.22.0` to avoid new breaking configuration changes in Prisma 7, allowing us to keep `url` directly in the schema as per standard practice.
-- Wrote a robust `prisma/seed.ts` script that produces a demoable world:
-  - 3 theatre chains with 3 screens each (mix of IMAX and STANDARD).
-  - Seat layouts per screen (Rows A-J) with mappings to `FRONT`, `STANDARD`, `PREMIUM`, and `RECLINER`.
-  - 6 movies with genres, cast, and reviews.
-  - Shows distributed across the next 7 days.
-  - 3 promo codes.
-  - Users created for each role (`CUSTOMER`, `HALL_MANAGER`, `ADMIN`).
+- Added `google_fonts: ^6.2.0` dependency to `cinebook_core`'s `pubspec.yaml`
+- Created `cinema_colors.dart` with standard static colors derived from `DESIGN.md`.
+- Created `cinema_theme_extension.dart` defining semantic color aliases and the specific `neonGlow` drop-shadow, as well as providing a constant dark mode default.
+- Created `cinema_theme.dart` configuring the complete dark theme using `ThemeData.dark(useMaterial3: true)` as the base and selectively overriding elements with `CinemaColors`.
+- Exported the theme classes in `cinebook_core.dart`.
 
 ## What I tested and test results
-- Verified that `docker-compose up -d` successfully created and started the Postgres and Redis containers.
-- Ran `npx prisma migrate dev --name init` which successfully compiled the schema, created the tables in the database, and generated the Prisma client.
-- Executed `npx prisma db seed` which successfully ran and committed the seed data to the database without any errors.
+- Ran `flutter pub get` in `cinebook_core`. (Success: Got dependencies!)
+- Ran `flutter analyze` in `cinebook_core`. (Success: "No issues found!")
 
 ## Files changed
-- `cinebook-server/package.json`
-- `cinebook-server/tsconfig.json`
-- `cinebook-server/docker-compose.yml`
-- `cinebook-server/.env`
-- `cinebook-server/prisma/schema.prisma`
-- `cinebook-server/prisma/seed.ts`
+- `cinebook_core/pubspec.yaml`
+- `cinebook_core/lib/cinebook_core.dart`
+- `cinebook_core/lib/src/theme/cinema_colors.dart` (created)
+- `cinebook_core/lib/src/theme/cinema_theme_extension.dart` (created)
+- `cinebook_core/lib/src/theme/cinema_theme.dart` (created)
 
 ## Self-review findings
-- Checked against requirements: Docker stack, schema, and comprehensive seed script are all implemented precisely.
-- The schema provided in the plan required minor adjustments for Prisma compilation (e.g. enum declarations on separate lines, and adding the missing `booking` field in the `Payment` model).
-- Over-engineering was avoided; focused purely on project initialization and database bootstrapping.
+- Checked that hex values correctly mapped to what the spec requested.
+- Ensured all required theme extensions were present (`neonGlow`, `seatAvailable`, `seatSelected`, `seatSold`, `structuralBorder`).
+- Verified `CinemaTheme.darkTheme` covers the broad set of requested component overrides (scaffold, textTheme, appBarTheme, etc).
 
 ## Issues or concerns
-- None. The schema is sound and the seed data properly models a realistic application state.
-
-## Fix Report
-- Removed `"z"` dependency from `cinebook-server/package.json`.
-- Added Node version enforcement `"engines": { "node": ">=22" }` to `cinebook-server/package.json`.
-- Changed `"type": "commonjs"` to `"type": "module"` in `cinebook-server/package.json`.
-- Added cleanup for `Message`, `Conversation`, and `AdminActivityLog` to `cinebook-server/prisma/seed.ts`.
-- Ran `npx tsx prisma/seed.ts` inside `cinebook-server` to verify the build isn't broken.
-  - Test command output ended with: `Seeding finished successfully.`
+- None. Task cleanly defines structural tokens.
