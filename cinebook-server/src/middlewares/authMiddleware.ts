@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+import { Role } from '@prisma/client';
+import { JWT_SECRET } from '../config.js';
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
@@ -13,7 +13,7 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
   const token = authHeader.split(' ')[1];
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { sub: string; role: string; jti: string; type?: string };
+    const payload = jwt.verify(token, JWT_SECRET) as { sub: string; role: Role; jti: string; type?: string };
     if (payload.type !== 'access') {
       res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Invalid token type' } });
       return;
@@ -26,14 +26,14 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
   }
 };
 
-export const requireRole = (...roles: string[]) => {
+export const requireRole = (...roles: Role[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } });
       return;
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!roles.includes(req.user.role as Role)) {
       res.status(403).json({ error: { code: 'FORBIDDEN', message: `Role ${req.user.role} is not authorized` } });
       return;
     }
@@ -48,7 +48,7 @@ declare global {
     interface Request {
       user?: {
         id: string;
-        role: string;
+        role: Role;
       };
     }
   }

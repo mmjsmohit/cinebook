@@ -78,3 +78,71 @@ Refresh Token Response: 200 {
   accessToken: '...'
 }
 ```
+
+## Additional Fixes Implemented
+- **Critical**: Added `if (payload.type !== 'access')` in `requireAuth` to reject refresh tokens when checking protected routes.
+- **Important**: Extended `test-auth.ts` to cover `requireAuth`, `requireRole`, and invalid/expired OTP/refresh tokens by introducing dummy endpoints.
+- **Minor**: Conditionally logged generic errors in `errorMiddleware.ts` based on `NODE_ENV`.
+
+### Updated Test Output
+```
+Testing /auth/request-otp Rate Limit...
+[SIMULATED OTP] phone=8888888888 code=485978
+Request 1 Response: 202 { message: 'OTP requested' }
+[SIMULATED OTP] phone=8888888888 code=309353
+Request 2 Response: 202 { message: 'OTP requested' }
+[SIMULATED OTP] phone=8888888888 code=910633
+Request 3 Response: 202 { message: 'OTP requested' }
+[SIMULATED OTP] phone=8888888888 code=960196
+Request 4 Response: 202 { message: 'OTP requested' }
+[SIMULATED OTP] phone=8888888888 code=362753
+Request 5 Response: 202 { message: 'OTP requested' }
+Request 6 Response: 429 {
+  error: {
+    code: 'TOO_MANY_REQUESTS',
+    message: 'Rate limit exceeded',
+    details: { retryAfter: 3600 }
+  }
+}
+
+Testing /auth/verify-otp with invalid code...
+Verify Invalid OTP Response: 400 { error: { code: 'INVALID_OTP', message: 'Invalid or expired OTP' } }
+[SIMULATED OTP] phone=8888888888 code=398132
+
+Testing /auth/verify-otp with code: 398132 ...
+Verify OTP Response: 200 {
+  accessToken: '...',
+  refreshToken: '...',
+  user: {
+    id: 'cmr3hyoj9000077zy29in0ehc',
+    phone: '8888888888',
+    name: null,
+    role: 'CUSTOMER',
+    disabled: false,
+    prefs: null,
+    createdAt: '2026-07-02T12:45:03.280Z'
+  }
+}
+
+Testing Protected Route with valid token...
+Protected Route Response: 200 {
+  message: 'Success',
+  user: { id: 'cmr3hyoj9000077zy29in0ehc', role: 'CUSTOMER' }
+}
+
+Testing Admin Route with user token...
+Admin Route Response (should fail): 403 {
+  error: { code: 'FORBIDDEN', message: 'Role CUSTOMER is not authorized' }
+}
+
+Testing Protected Route with refresh token (should fail)...
+Protected Route (Refresh Token) Response: 401 { error: { code: 'UNAUTHORIZED', message: 'Invalid token type' } }
+
+Testing /auth/refresh with valid token...
+Refresh Token Response: 200 {
+  accessToken: '...'
+}
+
+Testing /auth/refresh with invalid token...
+Invalid Refresh Token Response: 401 { error: { code: 'UNAUTHORIZED', message: 'Invalid refresh token' } }
+```
