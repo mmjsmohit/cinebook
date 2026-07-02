@@ -73,5 +73,52 @@ export function createProfileTools(userId: string) {
         };
       }),
     }),
+
+    requestPreferencesForm: tool({
+      description:
+        "Show an interactive preferences form to collect user booking filters (date, time, party size, seat category). Use this tool when the user wants to set search preferences, search parameters, or asks to fill in details.",
+      inputSchema: z.object({}),
+      execute: withToolLogger('requestPreferencesForm', async () => {
+        return {
+          renderHint: 'a2ui' as const,
+          surfaceId: 'booking-preferences-form',
+          components: [
+            {
+              type: 'form',
+              id: 'pref_form',
+              children: [
+                {
+                  type: 'datePicker',
+                  id: 'date',
+                  label: 'Show Date',
+                  required: true,
+                },
+                {
+                  type: 'timePicker',
+                  id: 'time',
+                  label: 'Preferred Time of Day',
+                  required: true,
+                },
+                {
+                  type: 'counter',
+                  id: 'partySize',
+                  label: 'Number of Tickets (Party Size)',
+                  min: 1,
+                  max: 10,
+                  defaultValue: 2,
+                },
+                {
+                  type: 'dropdown',
+                  id: 'seatCategory',
+                  label: 'Preferred Seating Category',
+                  options: ['NORMAL', 'PREMIUM', 'RECLINER'],
+                  defaultValue: 'NORMAL',
+                },
+              ],
+            },
+          ],
+        };
+      }),
+    }),
   };
 }
