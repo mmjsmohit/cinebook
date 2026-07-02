@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-03T02:22:30Z",
+  "title": "Design System: CineBook",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Neon Red",
+        "canonical": "oklch(62% 0.25 15)",
+        "tonalRamp": ["#300005", "#5c0011", "#8f001e", "#c2002d", "#ff2e51", "#ff5c75", "#ff8fa0", "#ffc2cc"]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Warm Amber",
+        "canonical": "oklch(76% 0.20 70)",
+        "tonalRamp": ["#2e1700", "#522b00", "#7d4700", "#aa6600", "#ff9f0a", "#ffb442", "#ffca75", "#ffe0a8"]
+      },
+      "success": {
+        "role": "success",
+        "displayName": "Emerald Green",
+        "canonical": "oklch(72% 0.18 142)",
+        "tonalRamp": ["#002409", "#004718", "#086e29", "#1b963e", "#30d158", "#5ee07e", "#8ceca3", "#bdf7cb"]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Deep Charcoal",
+        "canonical": "oklch(12% 0.01 250)",
+        "tonalRamp": ["#030304", "#07080a", "#0b0c0e", "#16181c", "#2c2e35", "#50545f", "#8e939e", "#d0d3d8"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display Title",
+        "purpose": "Hero movie titles and primary displays only."
+      },
+      "body": {
+        "displayName": "Body Sans",
+        "purpose": "General reading copy, descriptions, forms, and message text."
+      }
+    },
+    "shadows": [
+      {
+        "name": "neon-glow",
+        "value": "0 0 12px rgba(255, 46, 81, 0.4)",
+        "purpose": "Projection-like glowing outline for focused, selected, or high-priority CTA states."
+      }
+    ],
+    "motion": [
+      {
+        "name": "standard-ease",
+        "value": "cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "Standard exponential easing out for fluid UI transitions."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "360px"
+      },
+      {
+        "name": "tablet",
+        "value": "768px"
+      },
+      {
+        "name": "desktop",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action button, e.g. Book Tickets, Proceed to Pay.",
+      "html": "<button class=\"ds-btn-primary\">Book tickets</button>",
+      "css": ".ds-btn-primary { background: #ff2e51; color: #f5f6f8; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; padding: 16px 24px; border: none; border-radius: 8px; cursor: pointer; transition: background 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s cubic-bezier(0.25, 1, 0.5, 1); } .ds-btn-primary:hover { background: #e01b3c; box-shadow: 0 0 12px rgba(255, 46, 81, 0.4); }"
+    },
+    {
+      "name": "Movie Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Standard container for movie previews in grids.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-poster\"></div><div class=\"ds-card-title\">Inception</div><div class=\"ds-card-meta\">148m &bull; Sci-Fi</div></div>",
+      "css": ".ds-card { background: #16181c; border: 1px solid #2c2e35; border-radius: 16px; padding: 16px; max-width: 240px; font-family: 'Inter', sans-serif; } .ds-card-poster { aspect-ratio: 2/3; background: #2c2e35; border-radius: 8px; margin-bottom: 12px; } .ds-card-title { color: #f5f6f8; font-size: 18px; font-weight: 600; margin-bottom: 4px; } .ds-card-meta { color: #8e939e; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Immersive Theatre Marquee",
+    "overview": "CineBook's visual system evokes the dark, focused environment of a movie theater. By wrapping the interface in a deep charcoal canvas, user attention is immediately drawn to the vibrant, high-contrast visual elements like movie poster art, trailer previews, and glowing active statuses.",
+    "keyCharacteristics": [
+      "Dark-mode-first immersive atmosphere.",
+      "Saturated red and warm amber glows as primary interactive accents.",
+      "Highly legible typography with generous line height and clean letter-spacing.",
+      "Clean poster grids and structural borders instead of decorative lines."
+    ],
+    "rules": [
+      {
+        "name": "The Marquee Accent Rule",
+        "body": "The primary neon red accent color must be used on less than 10% of any given screen. Its impact comes from its scarcity and brightness against the dark background.",
+        "section": "colors"
+      },
+      {
+        "name": "The High Contrast Text Rule",
+        "body": "All body text must maintain a contrast ratio of at least 4.5:1 against its background. Never use muted light-gray text on gray cards.",
+        "section": "colors"
+      },
+      {
+        "name": "The Balanced Headline Rule",
+        "body": "All h1 to h3 headings must use text-wrap: balance to prevent awkward line breaks and single-word orphans.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-by-Default Rule",
+        "body": "Surfaces are flat at rest, using #16181c to denote cards. Shadows and glowing outlines appear only as a response to interactive states (hover, focus).",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do maintain a strict dark theme using high-contrast text to keep details readable.",
+      "Do use movie posters as the primary visual drivers, keeping the surrounding layout clean and minimal.",
+      "Do use smooth, exponential easing for all interactive transitions and hover effects."
+    ],
+    "donts": [
+      "Don't use generic white or light-gray SaaS dashboards (e.g. gray outline boxes).",
+      "Don't add colored side-stripe accent borders to cards or alert banners.",
+      "Don't use gradient text or over-designed glassmorphism as a default decoration.",
+      "Don't animate movie posters or images on hover; restrict hover effects to backgrounds, borders, and button elements."
+    ]
+  }
+}
