@@ -104,7 +104,7 @@ router.post('/verify-otp', async (req, res) => {
     .del(`otp:${phone}`)
     .exec();
 
-  const storedCode = results[0] as string | null;
+  const storedCode = (results[0] as unknown) as string | null;
   if (!storedCode || storedCode !== code) {
     res.status(400).json({ error: { code: 'INVALID_OTP', message: 'Invalid or expired OTP' } });
     return;

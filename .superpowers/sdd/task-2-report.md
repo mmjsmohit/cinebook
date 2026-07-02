@@ -146,3 +146,65 @@ Refresh Token Response: 200 {
 Testing /auth/refresh with invalid token...
 Invalid Refresh Token Response: 401 { error: { code: 'UNAUTHORIZED', message: 'Invalid refresh token' } }
 ```
+
+---
+
+## Code-Review Fix Pass — 2026-07-02
+
+### Commit
+`afe9b30` — fix(auth): atomic rate-limiter Lua script, refresh-token rotation, config centralisation, Role enum typing, gitignore node_modules, test assertions
+
+### Test Command & Output
+```
+cd cinebook-server && npm test
+```
+```
+=== Testing /auth/request-otp Rate Limit ===
+Request 1: status=202 ✓
+Request 2: status=202 ✓
+Request 3: status=202 ✓
+Request 4: status=202 ✓
+Request 5: status=202 ✓
+Request 6: status=429 ✓ (rate-limited, retryAfter present)
+
+=== Testing /auth/verify-otp with invalid code ===
+Verify Invalid OTP: status=400 ✓
+
+=== Testing /auth/verify-otp with valid code ===
+Verify OTP: status=200 ✓ (accessToken + refreshToken returned)
+
+=== Testing Protected Route with valid access token ===
+Protected Route: status=200 ✓
+
+=== Testing Admin Route with non-admin token ===
+Admin Route: status=403 ✓
+
+=== Testing Protected Route with refresh token ===
+Protected Route (Refresh Token): status=401 ✓
+
+=== Testing /auth/refresh with valid refresh token ===
+Refresh Token: status=200 ✓ (new accessToken + new refreshToken returned)
+
+=== Testing refresh-token rotation: old token must be rejected ===
+Reused old refresh token: status=401 ✓
+
+=== Testing /auth/refresh with invalid token ===
+Invalid Refresh Token: status=401 ✓
+
+✅ All assertions passed!
+```
+
+### Issues Fixed
+
+| # | Severity | Issue | Fix |
+|---|----------|-------|-----|
+| 1 | Critical | Non-atomic rate-limit (ZADD→ZCARD→ZREM race) | Redis Lua script atomically prunes, checks, and conditionally adds in one round-trip |
+| 2 | Important | No refresh-token rotation | `/refresh` now deletes old JTI, signs new refresh token with new JTI, returns both |
+| 3 | Important | JWT_SECRET duplicated across two files | `src/config.ts` exports single JWT_SECRET; throws in non-dev if absent |
+| 4 | Important | `node_modules` committed | Added `.gitignore` at repo root; ran `git rm -r --cached cinebook-server/node_modules` |
+| 5 | Minor | Test file had no assertions | Added `node:assert/strict` checks throughout; `process.exit(1)` on failure |
+| 6 | Minor | `package.json` test script was stub | Updated to `npx tsx test-auth.ts` |
+| 7 | Minor | `req.user.role` typed as `string` | Imported `Role` from `@prisma/client`; typed throughout |
+
+### Concerns
+None — all assertions pass cleanly.
