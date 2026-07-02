@@ -68,7 +68,7 @@ class _AgentScreenState extends State<AgentScreen> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (ctx) =>
-          ChatBloc(apiClient: ctx.read<ApiClient>(), controller: _controller),
+          ChatBloc(apiClient: ctx.read<ApiClient>(), controller: _controller)..add(ChatFetchThreads()),
       child: BlocListener<ChatBloc, ChatState>(
         listenWhen: (previous, current) =>
             previous.error != current.error && current.error != null,
@@ -81,39 +81,108 @@ class _AgentScreenState extends State<AgentScreen> {
           builder: (context, state) {
             final bloc = context.read<ChatBloc>();
 
-            return AiChatWidget(
-              currentUser: _currentUser,
-              aiUser: _aiUser,
-              controller: _controller,
-              onSendMessage: (msg) => bloc.add(ChatSendMessage(msg.text)),
-              onCancelGenerating: () => bloc.add(ChatCancelMessage()),
-              loadingConfig: LoadingConfig(isLoading: state.isLoading),
-              enableMarkdownStreaming: true,
-              streamingWordByWord: true,
-              streamingDuration: const Duration(milliseconds: 30),
-              resultRenderers: {
-                'movieList': (ctx, data) => _buildMovieList(data),
-                'movieCard': (ctx, data) => _buildMovieCard(data),
-                'showtimes': (ctx, data) => _buildShowtimes(data),
-                'seatMap': (ctx, data) => _buildSeatMapPreview(data),
-                'bookingSummary': (ctx, data) {
-                  // When we get a booking summary, we might want to prompt for confirmation
-                  // We'll show the summary and add a confirm button
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('CineBot'),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                       bloc.add(ChatClearHistory());
+                    },
+                  )
+                ],
+              ),
+              drawer: Drawer(
+                child: SafeArea(
+                  child: Column(
                     children: [
-                      _buildBookingSummary(data),
-                      const SizedBox(height: 8),
-                      FilledButton(
-                        onPressed: () =>
-                            _showConfirmationDialog(context, bloc, data),
-                        child: const Text('Confirm Booking'),
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text('Past Threads', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      ),
+                      if (state.isLoadingThreads)
+                        const CircularProgressIndicator(),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: state.threads.length,
+                          itemBuilder: (context, index) {
+                            final thread = state.threads[index];
+                            return ListTile(
+                              title: Text('Thread ${thread['id'].toString().substring(0, 8)}'),
+                              subtitle: Text(thread['createdAt'].toString().substring(0, 10)),
+                              onTap: () {
+                                Navigator.pop(context); // close drawer
+                                bloc.add(ChatSwitchThread(thread['id']));
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ],
-                  );
-                },
-                'paymentResult': (ctx, data) => _buildPaymentResult(data),
-              },
+                  ),
+                ),
+              ),
+              body: Column(
+                children: [
+                  if (state.bookingContext.containsKey('holdToken') || state.bookingContext.containsKey('heldSeatIds'))
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      color: Colors.amber.shade100,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.timer, color: Colors.amber),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'You have seats on hold. Please confirm booking before the hold expires.',
+                              style: TextStyle(
+                                color: Colors.amber.shade900,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Expanded(
+                    child: AiChatWidget(
+                      currentUser: _currentUser,
+                      aiUser: _aiUser,
+                      controller: _controller,
+                      onSendMessage: (msg) => bloc.add(ChatSendMessage(msg.text)),
+                      onCancelGenerating: () => bloc.add(ChatCancelMessage()),
+                      loadingConfig: LoadingConfig(isLoading: state.isLoading),
+                      enableMarkdownStreaming: true,
+                      streamingWordByWord: true,
+                      streamingDuration: const Duration(milliseconds: 30),
+                      resultRenderers: {
+                        'movieList': (ctx, data) => _buildMovieList(data),
+                        'movieCard': (ctx, data) => _buildMovieCard(data),
+                        'showtimes': (ctx, data) => _buildShowtimes(data),
+                        'seatMap': (ctx, data) => _buildSeatMapPreview(data),
+                        'bookingSummary': (ctx, data) {
+                          // When we get a booking summary, we might want to prompt for confirmation
+                          // We'll show the summary and add a confirm button
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildBookingSummary(data),
+                              const SizedBox(height: 8),
+                              FilledButton(
+                                onPressed: () =>
+                                    _showConfirmationDialog(context, bloc, data),
+                                child: const Text('Confirm Booking'),
+                              ),
+                            ],
+                          );
+                        },
+                        'paymentResult': (ctx, data) => _buildPaymentResult(data),
+                      },
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         ),
