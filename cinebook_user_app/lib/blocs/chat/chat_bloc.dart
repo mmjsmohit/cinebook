@@ -20,6 +20,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatSendMessage>(_onSendMessage);
     on<ChatCancelMessage>(_onCancelMessage);
     on<ChatClearHistory>(_onClearHistory);
+    on<ChatFetchThreads>(_onFetchThreads);
+    on<ChatSwitchThread>(_onSwitchThread);
   }
 
   Future<AgUiClient> _getClient() async {
@@ -139,6 +141,58 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   void _onClearHistory(ChatClearHistory event, Emitter<ChatState> emit) {
     controller.clearMessages();
-    emit(const ChatState());
+    emit(ChatState(threads: state.threads));
+  }
+
+  Future<void> _onFetchThreads(ChatFetchThreads event, Emitter<ChatState> emit) async {
+    emit(state.copyWith(isLoadingThreads: true, error: null));
+    try {
+      final response = await apiClient.dio.get('/api/agents/cinebook/threads');
+      emit(state.copyWith(isLoadingThreads: false, threads: response.data as List<dynamic>));
+    } catch (e) {
+      emit(state.copyWith(isLoadingThreads: false, error: 'Failed to fetch threads'));
+    }
+  }
+
+  Future<void> _onSwitchThread(ChatSwitchThread event, Emitter<ChatState> emit) async {
+    emit(state.copyWith(isLoading: true, error: null));
+    try {
+      final response = await apiClient.dio.get('/api/agents/cinebook/threads/${event.threadId}');
+      final data = response.data as Map<String, dynamic>;
+      final messages = data['messages'] as List<dynamic>? ?? [];
+      
+      controller.clearMessages();
+      
+      final user = ChatUser(id: 'user');
+      final aiUser = ChatUser(id: 'ai', firstName: 'CineBot');
+      
+      for (final msg in messages) {
+        final role = msg['role'];
+        final contentStr = msg['content'];
+        String textContent = '';
+        if (contentStr is String) {
+          textContent = contentStr;
+        } else if (contentStr is Map) {
+           textContent = contentStr['text']?.toString() ?? contentStr.toString();
+        } else if (contentStr is List) {
+           // Array of parts, let's just grab text if available
+           try {
+             textContent = contentStr.firstWhere((p) => p['type'] == 'text')['text']?.toString() ?? '';
+           } catch (_) {}
+        }
+        
+        if (textContent.isNotEmpty) {
+          controller.addMessage(ChatMessage(
+            user: role == 'user' ? user : aiUser,
+            text: textContent,
+            createdAt: DateTime.parse(msg['createdAt']),
+          ));
+        }
+      }
+      
+      emit(state.copyWith(isLoading: false, threadId: event.threadId));
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, error: 'Failed to load thread'));
+    }
   }
 }

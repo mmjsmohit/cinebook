@@ -11,3 +11,10 @@ class ChatSendMessage extends ChatEvent {
 class ChatCancelMessage extends ChatEvent {}
 
 class ChatClearHistory extends ChatEvent {}
+
+class ChatFetchThreads extends ChatEvent {}
+
+class ChatSwitchThread extends ChatEvent {
+  final String threadId;
+  const ChatSwitchThread(this.threadId);
+}
