@@ -90,7 +90,7 @@ class _A2UiFormState extends State<A2UiForm> {
 
             // Time of Day Dropdown
             DropdownButtonFormField<String>(
-              value: _timeOfDay,
+              initialValue: _timeOfDay,
               decoration: const InputDecoration(labelText: 'Preferred Time'),
               items: ['MORNING', 'AFTERNOON', 'EVENING', 'NIGHT']
                   .map((t) => DropdownMenuItem(value: t, child: Text(t)))
@@ -103,7 +103,7 @@ class _A2UiFormState extends State<A2UiForm> {
 
             // Seating Category Dropdown
             DropdownButtonFormField<String>(
-              value: _seatCategory,
+              initialValue: _seatCategory,
               decoration: const InputDecoration(labelText: 'Seat Category'),
               items: ['NORMAL', 'PREMIUM', 'RECLINER']
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
@@ -129,8 +129,7 @@ class _A2UiFormState extends State<A2UiForm> {
                     ),
                     Text(
                       '$_partySize',
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),

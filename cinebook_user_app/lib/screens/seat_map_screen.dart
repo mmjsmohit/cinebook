@@ -64,6 +64,7 @@ class _SeatMapViewState extends State<_SeatMapView> {
 
   @override
   Widget build(BuildContext context) {
+    final cinemaTheme = Theme.of(context).extension<CinemaThemeExtension>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Select Seats'),
@@ -103,10 +104,10 @@ class _SeatMapViewState extends State<_SeatMapView> {
                             padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
                             child: Text(
                               'Rs.$price  $category',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white70),
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: CinemaColors.offWhite),
                             ),
                           ),
-                          const Divider(height: 1, color: Colors.white24),
+                          const Divider(height: 1, color: CinemaColors.structuralBorder),
                           const SizedBox(height: 16),
                           ...rowMap.entries.map((rowEntry) {
                             final row = rowEntry.key;
@@ -118,7 +119,7 @@ class _SeatMapViewState extends State<_SeatMapView> {
                                 children: [
                                   SizedBox(
                                     width: 24,
-                                    child: Text(row, style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.bold)),
+                                    child: Text(row, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: CinemaColors.steelGray, fontWeight: FontWeight.bold)),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
@@ -130,21 +131,21 @@ class _SeatMapViewState extends State<_SeatMapView> {
                                         final seatState = seat['state']; // Fixed bug here!
                                         final isMyHold = state.heldSeats.containsKey(seatId);
 
-                                        Color bgColor = Colors.transparent;
-                                        Color borderColor = Colors.green;
-                                        Color textColor = Colors.green;
+                                        Color? bgColor;
+                                        Color borderColor = cinemaTheme?.seatAvailable ?? CinemaColors.successGreen;
+                                        Color textColor = cinemaTheme?.seatAvailable ?? CinemaColors.successGreen;
 
                                         if (seatState == 'booked') {
-                                          bgColor = Colors.grey.shade800;
-                                          borderColor = Colors.grey.shade800;
-                                          textColor = Colors.grey.shade600;
+                                          bgColor = cinemaTheme?.seatSold ?? CinemaColors.inkCharcoal;
+                                          borderColor = cinemaTheme?.seatSold ?? CinemaColors.inkCharcoal;
+                                          textColor = CinemaColors.steelGray;
                                         } else if (seatState == 'held' && !isMyHold) {
-                                          bgColor = Colors.grey.shade800;
-                                          borderColor = Colors.grey.shade800;
-                                          textColor = Colors.grey.shade600;
+                                          bgColor = cinemaTheme?.seatSold ?? CinemaColors.inkCharcoal;
+                                          borderColor = cinemaTheme?.seatSold ?? CinemaColors.inkCharcoal;
+                                          textColor = CinemaColors.steelGray;
                                         } else if (isMyHold) {
-                                          bgColor = Colors.green;
-                                          textColor = Colors.white;
+                                          bgColor = cinemaTheme?.seatSelected ?? CinemaColors.successGreen;
+                                          textColor = CinemaColors.offWhite;
                                         }
 
                                         return GestureDetector(
@@ -162,7 +163,7 @@ class _SeatMapViewState extends State<_SeatMapView> {
                                             child: Center(
                                               child: Text(
                                                 '${seat['number']}',
-                                                style: TextStyle(fontSize: 12, color: textColor, fontWeight: FontWeight.bold),
+                                                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: textColor, fontWeight: FontWeight.bold),
                                               ),
                                             ),
                                           ),
@@ -173,7 +174,7 @@ class _SeatMapViewState extends State<_SeatMapView> {
                                 ],
                               ),
                             );
-                          }).toList(),
+                          }),
                         ],
                       );
                     }).toList(),
@@ -188,11 +189,11 @@ class _SeatMapViewState extends State<_SeatMapView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildLegendItem('Available', Colors.transparent, Colors.green),
+                    _buildLegendItem('Available', null, cinemaTheme?.seatAvailable ?? CinemaColors.successGreen),
                     const SizedBox(width: 16),
-                    _buildLegendItem('Selected', Colors.green, Colors.green),
+                    _buildLegendItem('Selected', cinemaTheme?.seatSelected ?? CinemaColors.successGreen, cinemaTheme?.seatSelected ?? CinemaColors.successGreen),
                     const SizedBox(width: 16),
-                    _buildLegendItem('Sold', Colors.grey.shade800, Colors.grey.shade800),
+                    _buildLegendItem('Sold', cinemaTheme?.seatSold ?? CinemaColors.inkCharcoal, cinemaTheme?.seatSold ?? CinemaColors.inkCharcoal),
                   ],
                 ),
               ),
@@ -201,9 +202,9 @@ class _SeatMapViewState extends State<_SeatMapView> {
               if (state.heldSeats.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))],
+                  decoration: BoxDecoration(
+                    color: CinemaColors.deepCharcoal,
+                    boxShadow: [BoxShadow(color: CinemaColors.inkCharcoal.withValues(alpha: 0.12), blurRadius: 4, offset: Offset(0, -2))],
                   ),
                   child: SafeArea(
                     top: false,
@@ -211,7 +212,7 @@ class _SeatMapViewState extends State<_SeatMapView> {
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.pink,
+                          backgroundColor: CinemaColors.neonRed,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
@@ -226,7 +227,7 @@ class _SeatMapViewState extends State<_SeatMapView> {
                             ),
                           );
                         },
-                        child: Text('Pay ₹$totalPrice', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                        child: Text('Pay ₹$totalPrice', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: CinemaColors.offWhite)),
                       ),
                     ),
                   ),
@@ -238,7 +239,7 @@ class _SeatMapViewState extends State<_SeatMapView> {
     );
   }
 
-  Widget _buildLegendItem(String label, Color bgColor, Color borderColor) {
+  Widget _buildLegendItem(String label, Color? bgColor, Color borderColor) {
     return Row(
       children: [
         Container(
@@ -251,7 +252,7 @@ class _SeatMapViewState extends State<_SeatMapView> {
           ),
         ),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 12)),
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }
