@@ -1,39 +1,67 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# CineBook Core Package (`cinebook_core`)
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+`cinebook_core` is a shared Dart plumbing package used by both the Customer App (`cinebook_user_app`) and the Hall Manager App (`cinebook_hall_app`). It abstracts network interactions, JWT authorization persistence, and data models to avoid codebase duplication.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+## 1. Package Architecture
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+This package maintains a strict separation from the UI layers of the applications.
 
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
-```dart
-const like = 'sample';
+```
+lib/
+├── src/
+│   ├── api/
+│   │   ├── api_client.dart       # Dio HTTP client wrapper
+│   │   └── endpoints.dart        # API routing dictionary
+│   ├── auth/
+│   │   └── token_storage.dart    # flutter_secure_storage client wrapper
+│   └── models/                   # Standard deserializable Dart DTOs
+│       ├── movie.dart
+│       ├── show.dart
+│       ├── seat.dart
+│       └── booking.dart
+└── cinebook_core.dart            # Primary library exports
 ```
 
-## Additional information
+---
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+## 2. Key Features
+
+### Intercepted API Client
+- Uses the `Dio` library wrapper for all network requests.
+- Contains an authentication interceptor that automatically reads the access JWT from secure storage and injects it into request headers.
+- Implements a retry interceptor. On receiving a `401 Unauthorized` status, it triggers a refresh-token call to `/auth/refresh` behind the scenes, updates the secure storage, and replays the failed request transparently.
+
+### Secure Token Manager
+- Uses `flutter_secure_storage` to persist tokens safely inside Android's KeyStore and iOS's Keychain.
+- Manages persistence of User roles and session details so users remain logged in across application cold starts.
+
+---
+
+## 3. Usage Guide
+
+To use this shared package in the Flutter applications, include it as a local path dependency in your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cinebook_core:
+    path: ../cinebook_core
+```
+
+Initialize the clients inside your main execution loop:
+```dart
+import 'package:cinebook_core/cinebook_core.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  final tokenStorage = TokenStorage();
+  final apiClient = ApiClient(
+    baseUrl: 'http://localhost:3000',
+    tokenStorage: tokenStorage,
+  );
+
+  runApp(MyApp(apiClient: apiClient));
+}
+```
