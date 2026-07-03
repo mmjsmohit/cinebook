@@ -56,14 +56,14 @@ class _SeatMapViewState extends State<_SeatMapView> {
     return grouped;
   }
 
-  int _calculateTotal(List<dynamic> seats, Map<String, DateTime> heldSeats) {
-    int total = 0;
+  double _calculateTotal(List<dynamic> seats, Map<String, DateTime> heldSeats) {
+    double total = 0;
     for (final seat in seats) {
       if (heldSeats.containsKey(seat['id'])) {
-        total += (seat['price'] as num).toInt();
+        total += (seat['price'] as num).toDouble();
       }
     }
-    return total;
+    return total / 100.0;
   }
 
   @override
@@ -100,10 +100,10 @@ class _SeatMapViewState extends State<_SeatMapView> {
                   transformationController: _transformationController,
                   minScale: 0.5,
                   maxScale: 2.5,
-                  boundaryMargin: const EdgeInsets.all(40),
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.only(bottom: 40, top: 20),
+                  boundaryMargin: const EdgeInsets.all(100),
+                  constrained: false,
+                  child: Container(
+                    padding: const EdgeInsets.only(bottom: 100, top: 40, left: 40, right: 40),
                     child: Column(
                       children: [
                         _buildScreenCurve(),
@@ -120,7 +120,7 @@ class _SeatMapViewState extends State<_SeatMapView> {
                               Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 24),
                                 child: Text(
-                                  '$category - ₹$price',
+                                  '$category - ₹${(price / 100).toStringAsFixed(0)}',
                                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                     color: CinemaColors.steelGray,
                                     letterSpacing: 2,
@@ -300,7 +300,7 @@ class _SeatMapViewState extends State<_SeatMapView> {
     );
   }
 
-  Widget _buildBottomBar(BuildContext context, int count, int total, SeatMapState state) {
+  Widget _buildBottomBar(BuildContext context, int count, double total, SeatMapState state) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
@@ -324,8 +324,8 @@ class _SeatMapViewState extends State<_SeatMapView> {
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   child: Text(
-                    '₹$total',
-                    key: ValueKey<int>(total),
+                    '₹${total.toStringAsFixed(0)}',
+                    key: ValueKey<double>(total),
                     style: const TextStyle(
                       color: CinemaColors.offWhite,
                       fontSize: 24,

@@ -4,6 +4,7 @@ import 'package:cinebook_core/cinebook_core.dart';
 import '../widgets/featured_movie_card.dart';
 import '../widgets/category_list_widget.dart';
 import 'movie_detail_screen.dart';
+import 'movies_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -57,7 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // TODO: Search functionality
+              Navigator.push(context, MaterialPageRoute(
+                builder: (_) => const MoviesListScreen(filterType: 'search'),
+              ));
             },
           ),
           IconButton(
@@ -79,81 +82,98 @@ class _HomeScreenState extends State<HomeScreen> {
             CategoryListWidget(
               title: 'Browse by Genre',
               items: _genres,
-              onSelect: (g) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected ${g['name']}'))),
+              onSelect: (g) {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => MoviesListScreen(filterType: 'genre', filterValue: g['name']),
+                ));
+              },
             ),
             
             const SizedBox(height: 16),
             
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Upcoming Releases', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                  TextButton(onPressed: () {}, child: const Text('See All')),
-                ],
-              ),
-            ),
-            
-            SizedBox(
-              height: 240,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                itemCount: _upcomingMovies.length,
-                itemBuilder: (context, index) {
-                  final movie = _upcomingMovies[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => MovieDetailScreen(movieId: movie['id'])));
-                    },
-                    child: Container(
-                      width: 140,
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: movie['posterUrl'] != null 
-                                  ? Image.network(
-                                      movie['posterUrl'], 
-                                      fit: BoxFit.cover, 
-                                      width: double.infinity,
-                                      errorBuilder: (ctx, err, st) => Container(color: CinemaColors.inkCharcoal, child: const Icon(Icons.movie, color: CinemaColors.steelGray)),
-                                    )
-                                  : Container(color: CinemaColors.inkCharcoal, child: const Icon(Icons.movie, color: CinemaColors.steelGray)),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            movie['title'] ?? 'Unknown', 
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            (movie['genres'] as List?)?.map((g) => g['name']).join(', ') ?? '', 
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: CinemaColors.steelGray),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
+            if (_upcomingMovies.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Upcoming Releases', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (_) => const MoviesListScreen(filterType: 'upcoming'),
+                        ));
+                      },
+                      child: const Text('See All'),
                     ),
-                  );
-                },
+                  ],
+                ),
               ),
-            ),
-            
-            const SizedBox(height: 16),
+              
+              SizedBox(
+                height: 240,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: _upcomingMovies.length,
+                  itemBuilder: (context, index) {
+                    final movie = _upcomingMovies[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => MovieDetailScreen(movieId: movie['id'])));
+                      },
+                      child: Container(
+                        width: 140,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: movie['posterUrl'] != null 
+                                    ? Image.network(
+                                        movie['posterUrl'], 
+                                        fit: BoxFit.cover, 
+                                        width: double.infinity,
+                                        errorBuilder: (ctx, err, st) => Container(color: CinemaColors.inkCharcoal, child: const Icon(Icons.movie, color: CinemaColors.steelGray)),
+                                      )
+                                    : Container(color: CinemaColors.inkCharcoal, child: const Icon(Icons.movie, color: CinemaColors.steelGray)),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              movie['title'] ?? 'Unknown', 
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              (movie['genres'] as List?)?.map((g) => g['name']).join(', ') ?? '', 
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: CinemaColors.steelGray),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+            ],
             
             CategoryListWidget(
               title: 'Languages',
               items: _languages,
-              onSelect: (l) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected ${l['name']}'))),
+              onSelect: (l) {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => MoviesListScreen(filterType: 'language', filterValue: l),
+                ));
+              },
             ),
           ],
         ),

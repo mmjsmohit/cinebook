@@ -174,6 +174,52 @@ class _AgentScreenState extends State<AgentScreen> {
                       loadingConfig: LoadingConfig(isLoading: state.isLoading),
                       enableMarkdownStreaming: true,
                       streamingWordByWord: false,
+                      inputOptions: InputOptions(
+                        containerDecoration: BoxDecoration(
+                          color: CinemaColors.inkCharcoal,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: CinemaColors.structuralBorder),
+                        ),
+                        materialColor: Colors.transparent,
+                        materialElevation: 0,
+                      ),
+                      welcomeMessageConfig: WelcomeMessageConfig(
+                        title: 'How can I help you today?',
+                        titleStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: CinemaColors.offWhite,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        centerVertically: true,
+                        containerDecoration: const BoxDecoration(color: Colors.transparent),
+                      ),
+                      exampleQuestions: [
+                        ExampleQuestion(
+                          question: 'Book 2 tickets for Inception',
+                          config: ExampleQuestionConfig(
+                            containerDecoration: BoxDecoration(
+                              color: CinemaColors.inkCharcoal,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: CinemaColors.structuralBorder),
+                            ),
+                            textStyle: const TextStyle(color: CinemaColors.offWhite),
+                            iconColor: CinemaColors.warmAmber,
+                            trailingIconColor: CinemaColors.steelGray,
+                          ),
+                        ),
+                        ExampleQuestion(
+                          question: 'What movies are playing today?',
+                          config: ExampleQuestionConfig(
+                            containerDecoration: BoxDecoration(
+                              color: CinemaColors.inkCharcoal,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: CinemaColors.structuralBorder),
+                            ),
+                            textStyle: const TextStyle(color: CinemaColors.offWhite),
+                            iconColor: CinemaColors.warmAmber,
+                            trailingIconColor: CinemaColors.steelGray,
+                          ),
+                        ),
+                      ],
                       streamingDuration: const Duration(milliseconds: 30),
                       resultRenderers: {
                         'a2ui': (ctx, data) {

@@ -15,6 +15,7 @@ class ShowtimesScreen extends StatefulWidget {
 class _ShowtimesScreenState extends State<ShowtimesScreen> {
   Map<String, dynamic>? _movie;
   List<dynamic> _shows = [];
+  Map<String, double> _availability = {};
   bool _isLoading = true;
   DateTime _selectedDate = DateTime.now();
   String? _selectedFormat; // e.g., '2D', '3D', 'IMAX'
@@ -36,9 +37,27 @@ class _ShowtimesScreenState extends State<ShowtimesScreen> {
         api.dio.get('/shows?movieId=${widget.movieId}&date=$dateStr'),
       ]);
       
+      final fetchedShows = results[1].data['shows'] as List;
+      
+      // Fetch batch availability
+      final showIds = fetchedShows.map((s) => s['id']).join(',');
+      Map<String, double> availabilityMap = {};
+      if (showIds.isNotEmpty) {
+        try {
+          final availRes = await api.dio.get('/shows/availability?showIds=$showIds');
+          final map = availRes.data['availability'] as Map<String, dynamic>;
+          map.forEach((k, v) {
+            availabilityMap[k] = (v as num).toDouble();
+          });
+        } catch (e) {
+          // Fallback if batch endpoint fails
+        }
+      }
+      
       setState(() {
         _movie = results[0].data['movie'];
-        _shows = results[1].data['shows'];
+        _shows = fetchedShows;
+        _availability = availabilityMap;
         _isLoading = false;
         
         // Auto-select first available format if current selection isn't valid
@@ -72,6 +91,11 @@ class _ShowtimesScreenState extends State<ShowtimesScreen> {
     for (final show in _shows) {
       if (_selectedFormat != null && show['format'] != _selectedFormat) {
         continue;
+      }
+      
+      final startTime = DateTime.parse(show['startTime']).toLocal();
+      if (startTime.isBefore(DateTime.now())) {
+        continue; // Skip past shows
       }
       
       final theatreName = show['screen']?['theatre']?['name'] ?? 'Unknown Theatre';
@@ -339,7 +363,6 @@ class _ShowtimesScreenState extends State<ShowtimesScreen> {
                       ),
                 ),
               ),
-              const Icon(Icons.info_outline, size: 18, color: CinemaColors.steelGray),
             ],
           ),
           const SizedBox(height: 16),
@@ -350,11 +373,7 @@ class _ShowtimesScreenState extends State<ShowtimesScreen> {
               final startTime = DateTime.parse(show['startTime']).toLocal();
               final timeStr = DateFormat('hh:mm a').format(startTime);
               
-              // Mock availability calculation for UI polish
-              // In a real app, this would come from the API payload
-              final capacity = 100; // Mock
-              final booked = (show['id'].hashCode % 100); // Deterministic mock
-              final availability = 1.0 - (booked / capacity);
+              final availability = _availability[show['id']] ?? 1.0;
               
               Color statusColor;
               if (availability > 0.5) {

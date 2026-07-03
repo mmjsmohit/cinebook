@@ -15,7 +15,12 @@ export async function getShows(input: ShowQueryInput) {
     const day = new Date(input.date);
     const nextDay = new Date(day);
     nextDay.setDate(nextDay.getDate() + 1);
-    where.startTime = { gte: day, lt: nextDay };
+    
+    const now = new Date();
+    where.startTime = { 
+      gte: now > day ? now : day, 
+      lt: nextDay 
+    };
   }
 
   if (input.city || input.screenType) {

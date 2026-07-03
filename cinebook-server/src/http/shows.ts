@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getShows, getShowById } from '../services/showService.js';
-import { getSeatAvailability } from '../services/seatService.js';
+import { getSeatAvailability, getBatchSeatAvailability } from '../services/seatService.js';
 import { holdSeats, releaseHold } from '../services/holdService.js';
 import { requireAuth } from '../middlewares/authMiddleware.js';
 import {
@@ -17,6 +17,23 @@ router.get('/', async (req, res, next) => {
     const input = showQuerySchema.parse(req.query);
     const shows = await getShows(input);
     res.json({ shows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /shows/availability?showIds=id1,id2,id3
+router.get('/availability', async (req, res, next) => {
+  try {
+    const showIdsStr = String(req.query.showIds || '');
+    const showIds = showIdsStr.split(',').filter(Boolean);
+    if (showIds.length === 0) {
+      res.json({ availability: {} });
+      return;
+    }
+    
+    const availability = await getBatchSeatAvailability(showIds);
+    res.json({ availability });
   } catch (err) {
     next(err);
   }
@@ -53,6 +70,17 @@ router.get('/:id/seats', async (req, res, next) => {
 // POST /shows/:id/holds
 router.post('/:id/holds', requireAuth, async (req, res, next) => {
   try {
+    const show = await getShowById(String(req.params['id']));
+    if (!show) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Show not found' } });
+      return;
+    }
+    
+    if (new Date(show.startTime) < new Date()) {
+      res.status(400).json({ error: { code: 'PAST_SHOW', message: 'Cannot book past shows' } });
+      return;
+    }
+
     const { seatIds } = holdRequestSchema.parse(req.body);
     const result = await holdSeats(String(req.params['id']), seatIds, req.user!.id);
     if ('failedSeatIds' in result) {

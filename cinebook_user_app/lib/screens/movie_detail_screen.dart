@@ -292,7 +292,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 const Icon(Icons.star, color: CinemaColors.warmAmber, size: 20),
                 const SizedBox(width: 4),
                 Text(
-                  '${_calculateAverageRating().toStringAsFixed(1)} / 5.0',
+                  '${_calculateAverageRating().toStringAsFixed(1)} / 10',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -316,13 +316,14 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 children: [
                   Text(r['author'] ?? 'Anonymous', style: const TextStyle(fontWeight: FontWeight.bold)),
                   Row(
-                    children: List.generate(5, (index) {
-                      return Icon(
-                        index < (r['rating'] as num? ?? 0) ? Icons.star : Icons.star_border,
-                        size: 14,
-                        color: CinemaColors.warmAmber,
-                      );
-                    }),
+                    children: [
+                      const Icon(Icons.star, size: 14, color: CinemaColors.warmAmber),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${r['rating'] ?? 0} / 10',
+                        style: const TextStyle(color: CinemaColors.warmAmber, fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
+                    ],
                   ),
                 ],
               ),

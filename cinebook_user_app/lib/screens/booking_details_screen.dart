@@ -358,7 +358,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Total Amount', style: TextStyle(color: CinemaColors.steelGray, fontSize: 14)),
-              Text('₹${_booking!['totalCost']}', style: const TextStyle(color: CinemaColors.offWhite, fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('₹${(_booking!['totalCost'] / 100).toStringAsFixed(0)}', style: const TextStyle(color: CinemaColors.offWhite, fontSize: 18, fontWeight: FontWeight.bold)),
             ],
           ),
           if (payment != null) ...[

@@ -43,3 +43,28 @@ export async function getSeatAvailability(showId: string) {
     };
   });
 }
+
+/** Return availability summary for multiple shows (for UI color coding) */
+export async function getBatchSeatAvailability(showIds: string[]) {
+  const shows = await prisma.show.findMany({
+    where: { id: { in: showIds } },
+    include: {
+      screen: { include: { seats: { select: { id: true } } } },
+      bookedSeats: { select: { seatId: true } },
+    },
+  });
+
+  const availability: Record<string, number> = {};
+
+  for (const show of shows) {
+    const bookedCount = show.bookedSeats.length;
+    const allSeatIds = show.screen.seats.map((s) => s.id);
+    const heldSeatIds = await getHeldSeatIds(show.id, allSeatIds);
+    
+    const unavailableCount = bookedCount + heldSeatIds.size;
+    const capacity = allSeatIds.length;
+    
+    availability[show.id] = capacity > 0 ? 1.0 - (unavailableCount / capacity) : 0;
+  }
+  return availability;
+}

@@ -20,6 +20,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   bool _isLoading = true;
   bool _isProcessing = false;
   Map<String, dynamic>? _showDetails;
+  List<dynamic> _selectedSeats = [];
+  double _seatsBasePriceRupees = 0;
+  double _promoDiscountRupees = 0;
   
   final TextEditingController _promoController = TextEditingController();
   bool _isApplyingPromo = false;
@@ -45,10 +48,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> _fetchOrderDetails() async {
     try {
       final api = context.read<ApiClient>();
-      final res = await api.dio.get('/shows/${widget.showId}');
+      final res = await Future.wait([
+        api.dio.get('/shows/${widget.showId}'),
+        api.dio.get('/shows/${widget.showId}/seats'),
+      ]);
       if (mounted) {
         setState(() {
-          _showDetails = res.data['show'];
+          _showDetails = res[0].data['show'];
+          final allSeats = res[1].data['seats'] as List;
+          
+          double totalPaise = 0;
+          _selectedSeats = [];
+          for (final seat in allSeats) {
+            if (widget.seatIds.contains(seat['id'])) {
+              _selectedSeats.add(seat);
+              totalPaise += seat['price'];
+            }
+          }
+          _seatsBasePriceRupees = totalPaise / 100.0;
           _isLoading = false;
         });
       }
@@ -74,15 +91,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
       _isApplyingPromo = true;
       _appliedPromoCode = null;
       _promoMessage = null;
+      _promoDiscountRupees = 0;
     });
     try {
       final api = context.read<ApiClient>();
       
-      await api.dio.post('/promo/validate', data: {'code': code});
+      final baseAndTaxPaise = ((_seatsBasePriceRupees * 1.18) * 100).round();
+      
+      final res = await api.dio.post('/promo/apply', data: {'code': code, 'amount': baseAndTaxPaise});
       if (!mounted) return;
       setState(() {
         _appliedPromoCode = code;
         _promoMessage = 'Promo code applied successfully!';
+        _promoDiscountRupees = res.data['discount'] / 100.0;
         _isApplyingPromo = false;
       });
     } catch (e) {
@@ -90,6 +111,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       setState(() {
         _appliedPromoCode = null;
         _promoMessage = 'Invalid promo code';
+        _promoDiscountRupees = 0;
         _isApplyingPromo = false;
       });
     }
@@ -142,12 +164,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
-  // Assuming a static price per ticket for UI demo if not returned by API
+  // Fetch real prices from API
   double _calculateTotal() {
-    double basePrice = 250.0 * widget.seatIds.length;
-    double tax = basePrice * 0.18;
-    double discount = _appliedPromoCode != null ? 50.0 : 0.0;
-    return basePrice + tax - discount;
+    double tax = _seatsBasePriceRupees * 0.18;
+    return _seatsBasePriceRupees + tax - _promoDiscountRupees;
   }
 
   @override
@@ -303,9 +323,39 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       '${widget.seatIds.length} Ticket(s)',
                       style: const TextStyle(color: CinemaColors.steelGray, fontWeight: FontWeight.bold),
                     ),
-                    const Text(
-                      'View Seat Details',
-                      style: TextStyle(color: CinemaColors.warmAmber, fontWeight: FontWeight.bold),
+                    GestureDetector(
+                      onTap: () {
+                         showModalBottomSheet(
+                           context: context,
+                           backgroundColor: CinemaColors.inkCharcoal,
+                           builder: (_) => Padding(
+                             padding: const EdgeInsets.all(24),
+                             child: Column(
+                               mainAxisSize: MainAxisSize.min,
+                               crossAxisAlignment: CrossAxisAlignment.start,
+                               children: [
+                                 Text('Selected Seats', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: CinemaColors.offWhite, fontWeight: FontWeight.bold)),
+                                 const SizedBox(height: 16),
+                                 ..._selectedSeats.map((s) => Padding(
+                                   padding: const EdgeInsets.only(bottom: 8),
+                                   child: Row(
+                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                     children: [
+                                       Text('${s['row']}${s['number']} - ${s['category']}', style: const TextStyle(color: CinemaColors.steelGray, fontSize: 16)),
+                                       Text('₹${(s['price'] / 100).toStringAsFixed(0)}', style: const TextStyle(color: CinemaColors.offWhite, fontSize: 16, fontWeight: FontWeight.bold)),
+                                     ],
+                                   ),
+                                 )),
+                                 const SizedBox(height: 24),
+                               ],
+                             ),
+                           ),
+                         );
+                      },
+                      child: const Text(
+                        'View Seat Details',
+                        style: TextStyle(color: CinemaColors.warmAmber, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
