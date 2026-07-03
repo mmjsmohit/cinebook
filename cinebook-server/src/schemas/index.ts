@@ -186,6 +186,10 @@ export const adminMovieCreateSchema = z.object({
 
 export const adminMoviePatchSchema = adminMovieCreateSchema.partial();
 
+export const adminGenreUpdateSchema = z.object({
+  imageUrl: z.string().url().optional().nullable(),
+});
+
 export const adminTheatreCreateSchema = z.object({
   chain: z.string().min(1),
   name: z.string().min(1),
@@ -254,3 +258,4 @@ export type AdminScreenPatchInput = z.infer<typeof adminScreenPatchSchema>;
 export type AdminShowCreateInput = z.infer<typeof adminShowCreateSchema>;
 export type AdminReportsQueryInput = z.infer<typeof adminReportsQuerySchema>;
 export type AdminActivityQueryInput = z.infer<typeof adminActivityQuerySchema>;
+export type AdminGenreUpdateInput = z.infer<typeof adminGenreUpdateSchema>;

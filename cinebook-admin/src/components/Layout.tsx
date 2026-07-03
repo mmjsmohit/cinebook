@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: '/theatres', label: 'Theatres', icon: '🏛️' },
   { to: '/screens', label: 'Screens', icon: '🖥️' },
   { to: '/shows', label: 'Shows', icon: '🎭' },
+  { to: '/genres', label: 'Genres', icon: '🏷️' },
   { to: '/reports', label: 'Reports', icon: '📊' },
   { to: '/activity', label: 'Activity Log', icon: '📋' },
 ];

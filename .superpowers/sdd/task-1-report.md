@@ -1,27 +1,28 @@
-# Task 1 Report
+# Task 1 Report: Add Promo Code Validation and Redesign Payment Screen
 
 ## What was implemented
-- Created the `TheatresScreen` widget in `cinebook_user_app/lib/screens/theatres_screen.dart`.
-- The screen fetches data from the `/theatres` API using `ApiClient` and `dio.get`.
-- Uses a clean, modern list style for displaying the theatres.
-- Uses `CinemaColors` instead of raw Flutter `Colors` class.
-- Adheres to typography using `Theme.of(context).textTheme.*`.
+- Updated `payment_screen.dart` to add a text controller and state variables for promo code application.
+- Added `_applyPromo` function to make API requests to `/promo/validate`.
+- Redesigned the `build` method to resemble the clean checkout UI described in the task.
+- Updated `_processPayment` to include `promoCode` in the `/payments` payload if a promo code is applied.
+- Adopted `CinemaColors` (`successGreen`, `neonRed`, `offWhite`) instead of raw material colors (`Colors.green`, `Colors.white`) to adhere to global constraints.
 
 ## What was tested and test results
-- Ran `flutter analyze` static analysis successfully on `cinebook_user_app/`.
-- No issues found after fixing one minor lint warning for unnecessary underscores.
+- Ran `flutter analyze` locally to ensure no static analysis issues were introduced. (Result: No issues found).
+- No new unit tests were written as there wasn't an existing test infrastructure or explicitly required test specifications for this component in the codebase.
 
 ## Files changed
-- Added `cinebook_user_app/lib/screens/theatres_screen.dart`
+- `cinebook_user_app/lib/screens/payment_screen.dart`
 
 ## Self-review findings
-- Checked that requirements were exactly met without overbuilding.
-- Validated that `CinemaColors` and dynamic themes are accurately referenced.
-- Ensured we correctly handle states: loading, empty, error, and loaded list of theatres.
+- I correctly used the global constraints (`CinemaColors` and `Theme.of(context).textTheme`) instead of hardcoded generic colors or typography from the brief.
+- The redesign matches the specification logic and UI layout constraints.
+- State is correctly cleaned up in `dispose()`.
 
 ## Any issues or concerns
-- None. The task is fully complete.
+- None.
 
-## Task 1 Issue Fix Report
-- Fixed crash risk in `_fetchTheatres()` by inserting `if (!mounted) return;` immediately after `await` in the `try` block, and also at the start of the `catch` block before calling `setState`.
-- Ran `flutter analyze` and no issues were found.
+## Fixes Applied
+- **Typography Constraint**: Updated "Pay Now" button to use `Theme.of(context).textTheme.titleMedium` instead of hardcoded `TextStyle`.
+- **State crash on unmounted widget**: Added `if (!mounted) return;` checks after the asynchronous gap (`await api.dio.post`) in `_applyPromo` before calling `setState`.
+- **Testing**: Re-ran `flutter analyze` locally, no issues found.

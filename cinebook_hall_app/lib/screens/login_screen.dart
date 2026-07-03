@@ -51,34 +51,92 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cinemaExt = theme.extension<CinemaThemeExtension>();
+    
     return Scaffold(
-      appBar: AppBar(title: const Text('Hall Manager Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _phoneController,
-              decoration: const InputDecoration(labelText: 'Phone Number'),
-              keyboardType: TextInputType.phone,
-              enabled: !_otpSent,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 48),
+                // Glowing cinema icon
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: CinemaColors.inkCharcoal,
+                    boxShadow: cinemaExt?.neonGlow,
+                  ),
+                  child: const Icon(Icons.movie_filter, size: 48, color: CinemaColors.neonRed),
+                ),
+                const SizedBox(height: 24),
+                Text('CineBook', style: theme.textTheme.displayMedium),
+                const SizedBox(height: 4),
+                Text('Hall Manager', style: theme.textTheme.bodyMedium?.copyWith(color: CinemaColors.steelGray)),
+                const SizedBox(height: 48),
+                // Login card
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          controller: _phoneController,
+                          decoration: const InputDecoration(
+                            labelText: 'Phone Number',
+                            prefixIcon: Icon(Icons.phone_outlined),
+                            prefixText: '+91 ',
+                          ),
+                          keyboardType: TextInputType.phone,
+                          enabled: !_otpSent,
+                        ),
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          child: _otpSent
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+                                  child: TextField(
+                                    controller: _otpController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'OTP Code',
+                                      prefixIcon: Icon(Icons.lock_outline),
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    autofocus: true,
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                        const SizedBox(height: 24),
+                        if (_isLoading)
+                          const Center(child: CircularProgressIndicator())
+                        else
+                          ElevatedButton(
+                            onPressed: _otpSent ? _verifyOtp : _requestOtp,
+                            child: Text(_otpSent ? 'Verify OTP' : 'Request OTP'),
+                          ),
+                        if (_otpSent) ...[
+                          const SizedBox(height: 12),
+                          Center(
+                            child: TextButton(
+                              onPressed: _requestOtp,
+                              child: const Text('Resend OTP'),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            if (_otpSent) ...[
-              const SizedBox(height: 16),
-              TextField(
-                controller: _otpController,
-                decoration: const InputDecoration(labelText: 'OTP Code'),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-            const SizedBox(height: 24),
-            if (_isLoading) const CircularProgressIndicator()
-            else ElevatedButton(
-              onPressed: _otpSent ? _verifyOtp : _requestOtp,
-              child: Text(_otpSent ? 'Verify OTP' : 'Request OTP'),
-            ),
-          ],
+          ),
         ),
       ),
     );
