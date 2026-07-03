@@ -48,41 +48,115 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
-    return RefreshIndicator(
-      onRefresh: _fetchDashboardData,
-      child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        children: [
-          if (_trendingMovies.isNotEmpty) FeaturedMovieCard(movie: _trendingMovies.first),
-          const SizedBox(height: 16),
-          CategoryListWidget(
-            title: 'Browse by Genre',
-            items: _genres,
-            onSelect: (g) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected ${g['name']}'))),
-          ),
-          const SizedBox(height: 16),
-          CategoryListWidget(
-            title: 'Languages',
-            items: _languages,
-            onSelect: (l) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected ${l['name']}'))),
-          ),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text('Upcoming Releases', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-          ),
-          ..._upcomingMovies.map((movie) => ListTile(
-            leading: movie['posterUrl'] != null 
-                ? Image.network(movie['posterUrl'], width: 50, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.movie, size: 50, color: CinemaColors.steelGray))
-                : const Icon(Icons.movie, size: 50, color: CinemaColors.steelGray),
-            title: Text(movie['title'] ?? 'Unknown', style: Theme.of(context).textTheme.titleMedium),
-            subtitle: Text((movie['genres'] as List?)?.map((g) => g['name']).join(', ') ?? ''),
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => MovieDetailScreen(movieId: movie['id'])));
+    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('CineBook', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // TODO: Search functionality
             },
-          )),
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_none),
+            onPressed: () {},
+          ),
         ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: _fetchDashboardData,
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: 24),
+          children: [
+            if (_trendingMovies.isNotEmpty) 
+              FeaturedMovieCarousel(movies: _trendingMovies),
+            
+            const SizedBox(height: 24),
+            
+            CategoryListWidget(
+              title: 'Browse by Genre',
+              items: _genres,
+              onSelect: (g) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected ${g['name']}'))),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Upcoming Releases', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  TextButton(onPressed: () {}, child: const Text('See All')),
+                ],
+              ),
+            ),
+            
+            SizedBox(
+              height: 240,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemCount: _upcomingMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = _upcomingMovies[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => MovieDetailScreen(movieId: movie['id'])));
+                    },
+                    child: Container(
+                      width: 140,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: movie['posterUrl'] != null 
+                                  ? Image.network(
+                                      movie['posterUrl'], 
+                                      fit: BoxFit.cover, 
+                                      width: double.infinity,
+                                      errorBuilder: (ctx, err, st) => Container(color: CinemaColors.inkCharcoal, child: const Icon(Icons.movie, color: CinemaColors.steelGray)),
+                                    )
+                                  : Container(color: CinemaColors.inkCharcoal, child: const Icon(Icons.movie, color: CinemaColors.steelGray)),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            movie['title'] ?? 'Unknown', 
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            (movie['genres'] as List?)?.map((g) => g['name']).join(', ') ?? '', 
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: CinemaColors.steelGray),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            CategoryListWidget(
+              title: 'Languages',
+              items: _languages,
+              onSelect: (l) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected ${l['name']}'))),
+            ),
+          ],
+        ),
       ),
     );
   }
