@@ -16,7 +16,10 @@ export async function confirmBooking(userId: string, input: ConfirmBookingInput)
   // 1. Fetch show + seats
   const show = await prisma.show.findUnique({
     where: { id: showId },
-    include: { screen: { include: { seats: { where: { id: { in: seatIds } } } } } },
+    include: { 
+      movie: true,
+      screen: { include: { seats: { where: { id: { in: seatIds } } } } } 
+    },
   });
   if (!show) {
     throw Object.assign(new Error('Show not found'), { code: 'NOT_FOUND' });
@@ -98,7 +101,14 @@ export async function confirmBooking(userId: string, input: ConfirmBookingInput)
   await releaseHold(showId, seatIds, userId, holdToken);
 
   logger.info('bookingService.confirmBooking.success', { bookingId: booking.id, totalCost });
-  return { bookingId: booking.id, totalCost, discountApplied, status: booking.status };
+  return { 
+    bookingId: booking.id, 
+    totalCost, 
+    discountApplied, 
+    status: booking.status,
+    movieTitle: show.movie.title,
+    seats: seatIds,
+  };
 }
 
 export async function getBookingById(bookingId: string, userId: string, role: string) {
