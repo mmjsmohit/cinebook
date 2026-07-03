@@ -1,0 +1,59 @@
+name: Build Android APKs
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual trigger from the Actions tab on GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17' # Required for Gradle/Android builds
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies for cinebook_core
+        run: |
+          cd cinebook_core
+          flutter pub get
+
+      - name: Build Hall App APK
+        run: |
+          cd cinebook_hall_app
+          flutter pub get
+          flutter build apk --release
+
+      - name: Build User App APK
+        run: |
+          cd cinebook_user_app
+          flutter pub get
+          flutter build apk --release
+
+      - name: Upload Hall App APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cinebook-hall-app-release-apk
+          path: cinebook_hall_app/build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload User App APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cinebook-user-app-release-apk
+          path: cinebook_user_app/build/app/outputs/flutter-apk/app-release.apk
