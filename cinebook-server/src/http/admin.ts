@@ -7,6 +7,7 @@ import {
   createScreen, patchScreen,
   createAdminShow,
   getReports,
+  updateGenre,
 } from '../services/adminService.js';
 import { getActivityLog } from '../services/activityLogService.js';
 import {
@@ -16,6 +17,7 @@ import {
   adminScreenCreateSchema, adminScreenPatchSchema,
   adminShowCreateSchema,
   adminReportsQuerySchema, adminActivityQuerySchema,
+  adminGenreUpdateSchema,
 } from '../schemas/index.js';
 
 const router = Router();
@@ -145,6 +147,16 @@ router.get('/activity-log', async (req, res, next) => {
     const cleanFilters = Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== undefined));
     const logs = await getActivityLog(cleanFilters);
     res.json({ logs });
+  } catch (err) { next(err); }
+});
+
+// ─── Genres ──────────────────────────────────────────────────────────────────
+
+router.patch('/genres/:id', async (req, res, next) => {
+  try {
+    const data = adminGenreUpdateSchema.parse(req.body);
+    const genre = await updateGenre(req.user!.id, req.params.id!, data);
+    res.json({ genre });
   } catch (err) { next(err); }
 });
 
