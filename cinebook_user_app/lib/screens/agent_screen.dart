@@ -39,12 +39,15 @@ class _AgentScreenState extends State<AgentScreen> {
     ChatBloc bloc,
     Map<String, dynamic> data,
   ) {
+    final movieTitle = data['movieTitle'] ?? data['summary']?['movieTitle'] ?? data['booking']?['show']?['movie']?['title'] ?? 'Movie';
+    final totalCost = data['totalCost'] ?? data['summary']?['totalCost'] ?? 0;
+    
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirm Booking'),
         content: Text(
-          'Do you want to confirm the booking for ${data['movieTitle']}? Total: \$${data['totalPrice']}',
+          'Do you want to confirm the booking for $movieTitle? Total: ₹$totalCost',
         ),
         actions: [
           TextButton(
@@ -286,16 +289,17 @@ class _AgentScreenState extends State<AgentScreen> {
   }
 
   Widget _buildMovieCard(Map<String, dynamic> data) {
+    final movie = data['movie'] ?? data;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
           children: [
-            if (data['posterUrl'] != null)
+            if (movie['posterUrl'] != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: Image.network(
-                  data['posterUrl'],
+                  movie['posterUrl'],
                   width: 60,
                   height: 90,
                   fit: BoxFit.cover,
@@ -320,14 +324,14 @@ class _AgentScreenState extends State<AgentScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    data['title'] ?? '',
+                    movie['title'] ?? '',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    data['description'] ?? '',
+                    movie['description'] ?? '',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(color: CinemaColors.steelGray),
@@ -342,26 +346,40 @@ class _AgentScreenState extends State<AgentScreen> {
   }
 
   Widget _buildShowtimes(Map<String, dynamic> data) {
-    final showtimes = data['showtimes'] as List<dynamic>? ?? [];
-    if (showtimes.isEmpty) return const Text('No showtimes available.');
+    final shows = data['shows'] as List<dynamic>? ?? [];
+    if (shows.isEmpty) return const Text('No showtimes available.');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: showtimes
+      children: shows
           .map<Widget>(
-            (s) => Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: InputChip(
-                label: Text('${s['time']} - ${s['screenName'] ?? 'Screen'}'),
-                onPressed: () {},
-              ),
-            ),
+            (s) {
+              String timeStr = s['time'] ?? '';
+              if (s['startTime'] != null) {
+                try {
+                  timeStr = DateTime.parse(s['startTime']).toLocal().toString().substring(11, 16);
+                } catch (_) {}
+              }
+              final screenName = s['screen']?['theatre']?['name'] ?? s['screenName'] ?? 'Screen';
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: InputChip(
+                  label: Text('$timeStr - $screenName'),
+                  onPressed: () {},
+                ),
+              );
+            },
           )
           .toList(),
     );
   }
 
   Widget _buildSeatMapPreview(Map<String, dynamic> data) {
+    final seatsList = data['seats'] as List<dynamic>? ?? [];
+    final availableSeats = seatsList.isNotEmpty 
+        ? seatsList.where((s) => s['state'] == 'free').length 
+        : (data['availableSeats'] ?? 0);
+
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -377,13 +395,17 @@ class _AgentScreenState extends State<AgentScreen> {
           ),
           const SizedBox(height: 8),
           const Icon(Icons.event_seat, size: 48, color: CinemaColors.steelGray),
-          Text('Available seats: ${data['availableSeats'] ?? 0}'),
+          Text('Available seats: $availableSeats'),
         ],
       ),
     );
   }
 
   Widget _buildBookingSummary(Map<String, dynamic> data) {
+    final movieTitle = data['movieTitle'] ?? data['summary']?['movieTitle'] ?? data['booking']?['show']?['movie']?['title'] ?? 'Movie';
+    final seats = data['seats'] ?? data['heldSeatIds'] ?? data['summary']?['heldSeatIds'] ?? [];
+    final totalCost = data['totalCost'] ?? data['summary']?['totalCost'] ?? 0;
+
     return Card(
       color: CinemaColors.deepCharcoal.withValues(alpha: 0.1),
       child: Padding(
@@ -396,17 +418,17 @@ class _AgentScreenState extends State<AgentScreen> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const Divider(),
-            Text('Movie: ${data['movieTitle']}'),
+            Text('Movie: $movieTitle'),
             Text(
-              'Seats: ${(data['seats'] as List<dynamic>? ?? []).join(', ')}',
+              'Seats: ${(seats as List<dynamic>).join(', ')}',
             ),
             Text(
-              'Total: \$${data['totalPrice']}',
+              'Total: ₹$totalCost',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
-            if (data['holdExpiresAt'] != null)
+            if (data['holdExpiresAt'] != null || data['expiresAt'] != null)
               Text(
-                'Hold expires at: ${data['holdExpiresAt']}',
+                'Hold expires at: ${data['holdExpiresAt'] ?? data['expiresAt']}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: CinemaColors.warmAmber),
               ),
           ],
@@ -416,7 +438,7 @@ class _AgentScreenState extends State<AgentScreen> {
   }
 
   Widget _buildPaymentResult(Map<String, dynamic> data) {
-    final success = data['status'] == 'success';
+    final success = data['paymentId'] != null || data['status'] == 'success';
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
