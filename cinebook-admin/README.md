@@ -1,32 +1,48 @@
-# React + TypeScript + Vite
+# CineBook Admin Dashboard (`cinebook-admin`)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This is the system administrator dashboard. It is implemented as a lightweight React application built with TypeScript, bundler tools from Vite, and styled with vanilla CSS.
 
-Currently, two official plugins are available:
+## 1. Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Catalog Management**: View and modify the primary system entities (Movies, Genres, Theatres, Screens).
+- **User Role Administration**: Search user records, edit profile roles (Customer, Hall Manager, Admin), or disable/enable accounts.
+- **Auditing Logs**: View chronological entries in the `AdminActivityLog` mapping critical actions back to actor IDs.
+- **Revenue Analytics**: Visualizes daily, weekly, and monthly ticket sales and bookings count.
+- **Scheduling Override**: Allows administrators to bypass screen manager checks and force scheduling overrides if necessary.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 2. Component Structure
 
-## Expanding the Oxlint configuration
+The app maintains a modular file-system splitting views by administrative domains:
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```
+src/
+├── components/          # Reusable tables, forms, and charts
+│   ├── RevenueChart.tsx # Lightweight charts displaying aggregates
+│   └── Sidebar.tsx
+├── pages/               # High-level route controllers
+│   ├── Catalog.tsx      # Movie and theater CRUD interfaces
+│   ├── Users.tsx        # Account enabling and role management
+│   ├── AuditLogs.tsx    # Chronological history viewer
+│   └── Dashboard.tsx    # Revenue visualizer
+├── services/            # Client api wrappers
+│   └── api.ts
+└── App.tsx              # React router definitions
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+---
+
+## 3. Development Setup
+
+Install dependencies and start the Vite server:
+```bash
+# Install packages
+npm install
+
+# Run in development mode (with HMR)
+npm run dev
+
+# Build production assets
+npm run build
+```
