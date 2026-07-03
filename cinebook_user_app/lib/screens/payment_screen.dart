@@ -133,6 +133,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         'showId': widget.showId,
         'seatIds': widget.seatIds,
         'holdToken': holdToken,
+        if (_appliedPromoCode != null) 'promoCode': _appliedPromoCode,
       });
       final bookingId = bookRes.data['bookingId'];
 
@@ -143,7 +144,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
       await api.dio.post('/payments', data: {
         'bookingId': bookingId,
         'cardNumber': '4000', 
-        if (_appliedPromoCode != null) 'promoCode': _appliedPromoCode,
       });
 
       if (mounted) {
@@ -500,6 +500,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Widget _buildBottomBar() {
+    final tax = _seatsBasePriceRupees * 0.18;
     final total = _calculateTotal();
     
     return Container(
@@ -523,7 +524,45 @@ class _PaymentScreenState extends State<PaymentScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Amount Payable', style: TextStyle(color: CinemaColors.steelGray, fontSize: 16)),
+                const Text('Tickets Base Price', style: TextStyle(color: CinemaColors.steelGray, fontSize: 14)),
+                Text(
+                  '₹${_seatsBasePriceRupees.toStringAsFixed(2)}',
+                  style: const TextStyle(color: CinemaColors.offWhite, fontSize: 14),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Tax (18%)', style: TextStyle(color: CinemaColors.steelGray, fontSize: 14)),
+                Text(
+                  '₹${tax.toStringAsFixed(2)}',
+                  style: const TextStyle(color: CinemaColors.offWhite, fontSize: 14),
+                ),
+              ],
+            ),
+            if (_promoDiscountRupees > 0) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Promo Discount', style: TextStyle(color: CinemaColors.successGreen, fontSize: 14)),
+                  Text(
+                    '-₹${_promoDiscountRupees.toStringAsFixed(2)}',
+                    style: const TextStyle(color: CinemaColors.successGreen, fontSize: 14),
+                  ),
+                ],
+              ),
+            ],
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Divider(color: CinemaColors.structuralBorder),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Amount Payable', style: TextStyle(color: CinemaColors.steelGray, fontSize: 16, fontWeight: FontWeight.bold)),
                 Text(
                   '₹${total.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(

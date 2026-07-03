@@ -140,9 +140,151 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
     final isConfirmed = status == 'CONFIRMED';
     final isCancelled = status == 'CANCELLED';
     
+    final isPast = startTime != null && startTime.isBefore(DateTime.now());
+
     Color statusColor = CinemaColors.steelGray;
     if (isConfirmed) statusColor = CinemaColors.successGreen;
     if (isCancelled) statusColor = CinemaColors.neonRed;
+
+    Widget card = Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: CinemaColors.inkCharcoal,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: CinemaColors.structuralBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: movie != null && movie['posterUrl'] != null
+                      ? Image.network(
+                          movie['posterUrl'],
+                          width: 70,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_,_,_) => const SizedBox(width: 70, height: 100, child: ColoredBox(color: CinemaColors.deepCharcoal)),
+                        )
+                      : const SizedBox(width: 70, height: 100, child: ColoredBox(color: CinemaColors.deepCharcoal)),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        movie?['title'] ?? 'Unknown Movie',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: CinemaColors.offWhite,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      if (startTime != null)
+                        Text(
+                          DateFormat('EEE, d MMM • hh:mm a').format(startTime),
+                          style: const TextStyle(color: CinemaColors.steelGray, fontSize: 13),
+                        ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              status,
+                              style: TextStyle(
+                                color: statusColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          if (booking['promoCode'] != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: CinemaColors.successGreen.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'PROMO: ${booking['promoCode']}',
+                                style: const TextStyle(
+                                  color: CinemaColors.successGreen,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                          const Spacer(),
+                          Text(
+                            '₹${(booking['totalCost'] / 100).toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              color: CinemaColors.offWhite,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: const BoxDecoration(
+              color: CinemaColors.deepCharcoal,
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+              border: Border(top: BorderSide(color: CinemaColors.structuralBorder)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Booking ID: ${booking['id'].toString().substring(0, 8).toUpperCase()}',
+                  style: const TextStyle(color: CinemaColors.steelGray, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  children: [
+                    if (isConfirmed && !isPast)
+                      GestureDetector(
+                        onTap: () => _cancelBooking(booking['id']),
+                        child: const Text('Cancel', style: TextStyle(color: CinemaColors.neonRed, fontWeight: FontWeight.bold, fontSize: 13)),
+                      ),
+                    if (isConfirmed && !isPast) const SizedBox(width: 16),
+                    const Text(
+                      'View Details',
+                      style: TextStyle(color: CinemaColors.warmAmber, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
 
     return GestureDetector(
       onTap: () {
@@ -153,127 +295,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
           ),
         );
       },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: CinemaColors.inkCharcoal,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: CinemaColors.structuralBorder),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            )
-          ],
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: movie != null && movie['posterUrl'] != null
-                        ? Image.network(
-                            movie['posterUrl'],
-                            width: 70,
-                            height: 100,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_,_,_) => const SizedBox(width: 70, height: 100, child: ColoredBox(color: CinemaColors.deepCharcoal)),
-                          )
-                        : const SizedBox(width: 70, height: 100, child: ColoredBox(color: CinemaColors.deepCharcoal)),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          movie?['title'] ?? 'Unknown Movie',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: CinemaColors.offWhite,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                        if (startTime != null)
-                          Text(
-                            DateFormat('EEE, d MMM • hh:mm a').format(startTime),
-                            style: const TextStyle(color: CinemaColors.steelGray, fontSize: 13),
-                          ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: statusColor.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                status,
-                                style: TextStyle(
-                                  color: statusColor,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              '₹${(booking['totalCost'] / 100).toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                color: CinemaColors.offWhite,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
-                color: CinemaColors.deepCharcoal,
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
-                border: Border(top: BorderSide(color: CinemaColors.structuralBorder)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Booking ID: ${booking['id'].toString().substring(0, 8).toUpperCase()}',
-                    style: const TextStyle(color: CinemaColors.steelGray, fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    children: [
-                      if (isConfirmed)
-                        GestureDetector(
-                          onTap: () => _cancelBooking(booking['id']),
-                          child: const Text('Cancel', style: TextStyle(color: CinemaColors.neonRed, fontWeight: FontWeight.bold, fontSize: 13)),
-                        ),
-                      const SizedBox(width: 16),
-                      const Text(
-                        'View Details',
-                        style: TextStyle(color: CinemaColors.warmAmber, fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: isPast ? Opacity(opacity: 0.6, child: card) : card,
     );
   }
 }

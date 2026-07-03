@@ -342,6 +342,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
   Widget _buildPaymentDetails() {
     final payment = _booking!['payment'];
+    final promoCode = _booking!['promoCode'];
+    final discountAmount = _booking!['discountAmount'];
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -354,10 +357,22 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         children: [
           const Text('Payment Summary', style: TextStyle(color: CinemaColors.offWhite, fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
+          if (promoCode != null && discountAmount != null) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Promo ($promoCode)', style: const TextStyle(color: CinemaColors.successGreen, fontSize: 14)),
+                Text('-₹${(discountAmount / 100).toStringAsFixed(0)}', style: const TextStyle(color: CinemaColors.successGreen, fontSize: 14)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Divider(color: CinemaColors.structuralBorder),
+            const SizedBox(height: 8),
+          ],
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total Amount', style: TextStyle(color: CinemaColors.steelGray, fontSize: 14)),
+              const Text('Amount Paid', style: TextStyle(color: CinemaColors.steelGray, fontSize: 14)),
               Text('₹${(_booking!['totalCost'] / 100).toStringAsFixed(0)}', style: const TextStyle(color: CinemaColors.offWhite, fontSize: 18, fontWeight: FontWeight.bold)),
             ],
           ),

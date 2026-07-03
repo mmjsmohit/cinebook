@@ -138,16 +138,18 @@ model Show {
 }
 
 model Booking {
-  id        String        @id @default(cuid())
-  userId    String
-  showId    String
-  user      User          @relation(fields: [userId], references: [id])
-  show      Show          @relation(fields: [showId], references: [id])
-  status    BookingStatus @default(PENDING)
-  totalCost Int
-  seats     BookedSeat[]
-  payment   Payment?
-  createdAt DateTime      @default(now())
+  id             String        @id @default(cuid())
+  userId         String
+  showId         String
+  user           User          @relation(fields: [userId], references: [id])
+  show           Show          @relation(fields: [showId], references: [id])
+  status         BookingStatus @default(PENDING)
+  totalCost      Int
+  promoCode      String?
+  discountAmount Int?
+  seats          BookedSeat[]
+  payment        Payment?
+  createdAt      DateTime      @default(now())
 }
 
 model BookedSeat {

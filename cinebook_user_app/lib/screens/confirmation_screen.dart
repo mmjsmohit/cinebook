@@ -119,7 +119,9 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
     
     // Group seats by category for display
     final Map<String, List<String>> seatsByCategory = {};
-    for (final seat in seats) {
+    for (final bookedSeat in seats) {
+      // The backend returns an array of BookedSeat objects, which contain the actual Seat object
+      final seat = bookedSeat['seat'] ?? bookedSeat;
       final category = seat['category'] ?? 'Standard';
       if (!seatsByCategory.containsKey(category)) {
         seatsByCategory[category] = [];

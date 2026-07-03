@@ -50,7 +50,8 @@ export async function confirmBooking(userId: string, input: ConfirmBookingInput)
     return { seatId: seat.id, price: Math.round(show.basePrice * multiplier) };
   });
 
-  let totalCost = seatPrices.reduce((sum, sp) => sum + sp.price, 0);
+  let baseCost = seatPrices.reduce((sum, sp) => sum + sp.price, 0);
+  let totalCost = Math.round(baseCost * 1.18);
 
   // 4. Apply promo if provided
   let discountApplied = 0;
@@ -72,6 +73,8 @@ export async function confirmBooking(userId: string, input: ConfirmBookingInput)
           showId,
           status: 'PENDING',
           totalCost,
+          promoCode: promoCode && discountApplied > 0 ? promoCode : null,
+          discountAmount: discountApplied > 0 ? discountApplied : null,
           seats: {
             create: seatPrices.map((sp) => ({
               showId,
