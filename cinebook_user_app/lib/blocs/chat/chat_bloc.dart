@@ -82,17 +82,20 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               user: aiUser,
               text: '', 
               createdAt: DateTime.now(),
-              customProperties: {'id': messageId},
+              customProperties: {'id': messageId, 'isStreaming': true},
             ));
           }
           final existing = controller.messages.firstWhere((m) => m.customProperties?['id'] == messageId);
-          controller.updateMessage(existing.copyWith(text: existing.text + uiEvent.delta));
+          controller.updateMessage(existing.copyWith(
+            text: existing.text + uiEvent.delta,
+            customProperties: {...?existing.customProperties, 'isStreaming': true},
+          ));
         } else if (uiEvent is ToolCallStartEvent) {
           controller.addMessage(ChatMessage.loading(
-            user: aiUser,
             id: uiEvent.toolCallId,
+            user: aiUser,
             text: 'Loading ${uiEvent.toolCallName}...',
-          ));
+          ).copyWith(customProperties: {'id': uiEvent.toolCallId}));
         } else if (uiEvent is ToolCallResultEvent) {
           // Parse the JSON content
           Map<String, dynamic> resultData = {};
@@ -109,7 +112,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             resultKind: renderHint,
             data: resultData,
             createdAt: DateTime.now(),
-          ));
+          ).copyWith(customProperties: {'id': uiEvent.toolCallId}));
         } else if (uiEvent is StateSnapshotEvent) {
           emit(state.copyWith(bookingContext: uiEvent.snapshot));
         } else if (uiEvent is RunFinishedEvent) {
