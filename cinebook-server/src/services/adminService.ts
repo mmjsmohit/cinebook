@@ -14,6 +14,7 @@ import type {
   AdminScreenPatchInput,
   AdminShowCreateInput,
   AdminReportsQueryInput,
+  AdminGenreUpdateInput,
 } from '../schemas/index.js';
 
 // ─── Users ───────────────────────────────────────────────────────────────────
@@ -254,4 +255,27 @@ export async function getReports(input: AdminReportsQueryInput) {
   const totalRevenue = data.reduce((sum, d) => sum + d.revenue, 0);
 
   return { range: input.range, totalBookings, totalRevenue, data };
+}
+
+// ─── Genres ──────────────────────────────────────────────────────────────────
+
+export async function updateGenre(actorId: string, genreId: string, data: AdminGenreUpdateInput) {
+  logger.info('adminService.updateGenre', { actorId, genreId, data });
+
+  const updateData: any = { ...data };
+  if (updateData.imageUrl === undefined) delete updateData.imageUrl;
+
+  const genre = await prisma.genre.update({
+    where: { id: genreId },
+    data: updateData,
+  });
+
+  await logActivity(
+    actorId,
+    'UPDATE',
+    `Genre:${genreId}`,
+    { data }
+  );
+
+  return genre;
 }

@@ -6,6 +6,9 @@ import { buildBookingToolsOnly, type ToolContext } from './tools/index.js';
 import { BOOKING_AGENT_SYSTEM_PROMPT } from './prompts.js';
 import { withToolLogger } from './toolLogger.js';
 import { logger } from '../infra/logger.js';
+import { prisma } from '../db.js';
+import { CATEGORY_MULTIPLIER } from '../services/movieService.js';
+import type { SeatCategory } from '@prisma/client';
 
 function getModel() {
   const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY! });
@@ -58,7 +61,26 @@ export function delegateToBookingAssistant(ctx: ToolContext) {
       }
 
       const summary = await inner.text;
-      logger.info('bookingAgent.complete', { userId: ctx.userId, showId, heldCount: heldSeats.length });
+      
+      let totalCost = 0;
+      let movieTitle = '';
+      if (showId && heldSeats.length > 0) {
+        const show = await prisma.show.findUnique({
+          where: { id: showId },
+          include: { 
+            movie: true,
+            screen: { include: { seats: { where: { id: { in: heldSeats } } } } } 
+          }
+        });
+        if (show) {
+          movieTitle = show.movie.title;
+          totalCost = show.screen.seats.reduce((sum, seat) => {
+            return sum + Math.round(show.basePrice * CATEGORY_MULTIPLIER[seat.category as SeatCategory]);
+          }, 0);
+        }
+      }
+
+      logger.info('bookingAgent.complete', { userId: ctx.userId, showId, heldCount: heldSeats.length, totalCost });
 
       return {
         renderHint: 'bookingSummary' as const,
@@ -67,6 +89,8 @@ export function delegateToBookingAssistant(ctx: ToolContext) {
         holdToken,
         expiresAt,
         summary,
+        totalCost,
+        movieTitle,
       };
     }),
   });
