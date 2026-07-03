@@ -3,7 +3,7 @@ import { tool, streamText, stepCountIs } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { delegateSchema } from '../schemas/index.js';
 import { buildBookingToolsOnly, type ToolContext } from './tools/index.js';
-import { BOOKING_AGENT_SYSTEM_PROMPT } from './prompts.js';
+import { buildBookingAgentPrompt } from './prompts.js';
 import { withToolLogger } from './toolLogger.js';
 import { logger } from '../infra/logger.js';
 import { prisma } from '../db.js';
@@ -30,7 +30,11 @@ export function delegateToBookingAssistant(ctx: ToolContext) {
 
       const inner = streamText({
         model: getModel(),
-        system: BOOKING_AGENT_SYSTEM_PROMPT,
+        system: buildBookingAgentPrompt(
+          ctx.city 
+            ? { city: ctx.city, currentTime: new Date().toISOString() } 
+            : { currentTime: new Date().toISOString() }
+        ),
         messages: [{ role: 'user', content: request }],
         tools: buildBookingToolsOnly(ctx),
         stopWhen: stepCountIs(12),

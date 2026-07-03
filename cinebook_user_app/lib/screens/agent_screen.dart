@@ -47,7 +47,7 @@ class _AgentScreenState extends State<AgentScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text('Confirm Booking'),
         content: Text(
-          'Do you want to confirm the booking for $movieTitle? Total: ₹$totalCost',
+          'Do you want to confirm the booking for $movieTitle? Total: ₹${(totalCost / 100).toStringAsFixed(0)}',
         ),
         actions: [
           TextButton(
@@ -469,7 +469,7 @@ class _AgentScreenState extends State<AgentScreen> {
               'Seats: ${(seats as List<dynamic>).join(', ')}',
             ),
             Text(
-              'Total: ₹$totalCost',
+              'Total: ₹${(totalCost / 100).toStringAsFixed(0)}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             if (data['holdExpiresAt'] != null || data['expiresAt'] != null)

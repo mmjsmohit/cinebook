@@ -5,6 +5,7 @@ import 'home_screen.dart';
 import 'theatres_screen.dart';
 import 'history_screen.dart';
 import 'agent_screen.dart';
+import 'movies_list_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -28,6 +29,15 @@ class _MainScreenState extends State<MainScreen> {
           ? AppBar(
               title: Text(_currentIndex == 0 ? 'CineBook' : 'Theatres'),
               actions: [
+                if (_currentIndex == 0)
+                  IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const MoviesListScreen(filterType: 'search')),
+                    ),
+                  ),
                 IconButton(
                   icon: const Icon(Icons.history),
                   onPressed: () => Navigator.push(

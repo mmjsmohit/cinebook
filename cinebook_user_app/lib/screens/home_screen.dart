@@ -49,29 +49,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
     
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('CineBook', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(
-                builder: (_) => const MoviesListScreen(filterType: 'search'),
-              ));
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_none),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _fetchDashboardData,
-        child: ListView(
+    return RefreshIndicator(
+      onRefresh: _fetchDashboardData,
+      child: ListView(
           padding: const EdgeInsets.only(bottom: 24),
           children: [
             if (_trendingMovies.isNotEmpty) 
@@ -177,7 +159,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 }

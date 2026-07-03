@@ -226,7 +226,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
                             ),
                             const Spacer(),
                             Text(
-                              '₹${booking['totalCost']}',
+                              '₹${(booking['totalCost'] / 100).toStringAsFixed(0)}',
                               style: const TextStyle(
                                 color: CinemaColors.offWhite,
                                 fontWeight: FontWeight.bold,

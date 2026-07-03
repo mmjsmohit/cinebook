@@ -44,6 +44,7 @@ model User {
   id             String    @id @default(cuid())
   phone          String    @unique
   name           String?
+  city           String?
   role           Role      @default(CUSTOMER)
   disabled       Boolean   @default(false)
   managedScreens Screen[]  @relation("ScreenManager")

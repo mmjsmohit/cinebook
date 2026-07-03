@@ -59,12 +59,14 @@ export async function runAgent(opts: RunAgentOptions): Promise<void> {
   // ── 3. Build system prompt with user prefs ────────────────────────────────
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { prefs: true },
+    select: { name: true, city: true, prefs: true },
   });
-  const systemPrompt = buildSystemPrompt(user?.prefs as object | null, null);
+  const systemPrompt = buildSystemPrompt(user?.name, user?.city, new Date().toISOString(), user?.prefs as object | null, null);
 
   // ── 4. Build full tool registry (26 domain tools + delegation) ────────────
-  const toolRegistry = buildToolRegistry({ userId, role });
+  const toolRegistry = buildToolRegistry(
+    user?.city ? { userId, role, city: user.city } : { userId, role }
+  );
 
   const messages: ModelMessage[] = [
     ...history,

@@ -4,7 +4,7 @@ import { createBookingTools } from './bookingTools.js';
 import { createProfileTools } from './profileTools.js';
 import { delegateToBookingAssistant } from '../bookingAgent.js';
 
-export type ToolContext = { userId: string; role: string };
+export type ToolContext = { userId: string; role: string; city?: string };
 
 /**
  * Full tool registry: 10 movie + 12 booking + 4 profile + 1 delegation = 27 tools.

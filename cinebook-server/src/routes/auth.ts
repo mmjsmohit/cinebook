@@ -6,6 +6,7 @@ import { JWT_SECRET } from '../config.js';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { phoneVerifyRateLimiter } from '../infra/rateLimiter.js';
+import { requireAuth } from '../middlewares/authMiddleware.js';
 
 const router = Router();
 
@@ -20,6 +21,11 @@ const verifyOtpSchema = z.object({
 
 const refreshSchema = z.object({
   refreshToken: z.string()
+});
+
+const updateProfileSchema = z.object({
+  name: z.string().min(2).max(50),
+  city: z.string().min(2).max(50)
 });
 
 router.post('/request-otp', phoneVerifyRateLimiter, async (req, res) => {
@@ -98,6 +104,17 @@ router.post('/refresh', async (req, res) => {
   await redisClient.setEx(`refresh_token:${sub}:${newRefreshJti}`, 7 * 24 * 3600, 'valid');
 
   res.json({ accessToken, refreshToken: newRefreshToken });
+});
+
+router.patch('/profile', requireAuth, async (req, res) => {
+  const { name, city } = updateProfileSchema.parse(req.body);
+  
+  const user = await prisma.user.update({
+    where: { id: req.user!.id },
+    data: { name, city }
+  });
+  
+  res.json({ user });
 });
 
 export default router;
