@@ -13,13 +13,14 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  final _phoneFormKey = GlobalKey<FormState>();
+  final _otpFormKey = GlobalKey<FormState>();
   
   bool _otpSent = false;
   bool _isLoading = false;
 
   Future<void> _requestOtp() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_phoneFormKey.currentState!.validate()) return;
     
     setState(() => _isLoading = true);
     try {
@@ -41,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _verifyOtp() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_otpFormKey.currentState!.validate()) return;
     
     setState(() => _isLoading = true);
     try {
@@ -105,62 +106,59 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Logo & Tagline
-                      const Icon(
-                        Icons.movie_creation_rounded,
-                        size: 72,
-                        color: CinemaColors.neonRed,
-                      ).animate().fadeIn(duration: 600.ms).scale(),
-                      const SizedBox(height: 16),
-                      Text(
-                        'CineBook',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.2,
-                              color: CinemaColors.offWhite,
-                            ),
-                      ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Your ultimate movie experience',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: CinemaColors.steelGray,
-                            ),
-                      ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2),
-                      const SizedBox(height: 48),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo & Tagline
+                    const Icon(
+                      Icons.movie_creation_rounded,
+                      size: 72,
+                      color: CinemaColors.neonRed,
+                    ).animate().fadeIn(duration: 600.ms).scale(),
+                    const SizedBox(height: 16),
+                    Text(
+                      'CineBook',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                            color: CinemaColors.offWhite,
+                          ),
+                    ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Your ultimate movie experience',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: CinemaColors.steelGray,
+                          ),
+                    ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2),
+                    const SizedBox(height: 48),
 
-                      // Glassmorphism Form Container
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: CinemaColors.inkCharcoal.withValues(alpha: 0.7),
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: CinemaColors.structuralBorder.withValues(alpha: 0.5),
-                              ),
-                            ),
-                            child: AnimatedCrossFade(
-                              duration: const Duration(milliseconds: 400),
-                              crossFadeState: _otpSent
-                                  ? CrossFadeState.showSecond
-                                  : CrossFadeState.showFirst,
-                              firstChild: _buildPhoneStep(),
-                              secondChild: _buildOtpStep(),
+                    // Glassmorphism Form Container
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: CinemaColors.inkCharcoal.withValues(alpha: 0.7),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: CinemaColors.structuralBorder.withValues(alpha: 0.5),
                             ),
                           ),
+                          child: AnimatedCrossFade(
+                            duration: const Duration(milliseconds: 400),
+                            crossFadeState: _otpSent
+                                ? CrossFadeState.showSecond
+                                : CrossFadeState.showFirst,
+                            firstChild: _buildPhoneStep(),
+                            secondChild: _buildOtpStep(),
+                          ),
                         ),
-                      ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1),
-                    ],
-                  ),
+                      ),
+                    ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1),
+                  ],
                 ),
               ),
             ),
@@ -171,7 +169,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildPhoneStep() {
-    return Column(
+    return Form(
+      key: _phoneFormKey,
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
@@ -241,11 +241,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
         ),
       ],
+      ),
     );
   }
 
   Widget _buildOtpStep() {
-    return Column(
+    return Form(
+      key: _otpFormKey,
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
@@ -325,6 +328,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
         ),
       ],
+      ),
     );
   }
 }
