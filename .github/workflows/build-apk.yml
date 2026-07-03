@@ -9,6 +9,9 @@ on:
       - main
   workflow_dispatch: # Allows manual trigger from the Actions tab on GitHub
 
+permissions:
+  contents: write # Required to create a release and upload assets
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,14 +49,31 @@ jobs:
           flutter pub get
           flutter build apk --release
 
+      - name: Prepare APKs for distribution
+        run: |
+          cp cinebook_hall_app/build/app/outputs/flutter-apk/app-release.apk cinebook-hall-app.apk
+          cp cinebook_user_app/build/app/outputs/flutter-apk/app-release.apk cinebook-user-app.apk
+
       - name: Upload Hall App APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: cinebook-hall-app-release-apk
-          path: cinebook_hall_app/build/app/outputs/flutter-apk/app-release.apk
+          path: cinebook-hall-app.apk
 
       - name: Upload User App APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: cinebook-user-app-release-apk
-          path: cinebook_user_app/build/app/outputs/flutter-apk/app-release.apk
+          path: cinebook-user-app.apk
+
+      - name: Create Release and Upload APKs
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: Release v0.1.${{ github.run_number }}
+          draft: false
+          prerelease: false
+          files: |
+            cinebook-hall-app.apk
+            cinebook-user-app.apk
