@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsx src/server.ts",
+    "start": "npx prisma migrate deploy && tsx src/server.ts",
     "dev": "concurrently \"tsx src/server.ts\" \"cloudflared tunnel --loglevel error run --url http://localhost:3000 cinebook\"",
     "dev:local": "tsx src/server.ts",
     "test": "npx tsx test-auth.ts"
