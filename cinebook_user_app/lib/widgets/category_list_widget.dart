@@ -26,6 +26,9 @@ class CategoryListWidget extends StatelessWidget {
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
+              final name = item is Map ? (item['name'] ?? 'Unknown') : item.toString();
+              final imageUrl = item is Map ? item['imageUrl'] : null;
+
               return GestureDetector(
                 onTap: () => onSelect(item),
                 child: Container(
@@ -34,10 +37,26 @@ class CategoryListWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
+                    image: imageUrl != null
+                        ? DecorationImage(
+                            image: NetworkImage(imageUrl),
+                            fit: BoxFit.cover,
+                            colorFilter: ColorFilter.mode(
+                              Colors.black.withValues(alpha: 0.4),
+                              BlendMode.darken,
+                            ),
+                          )
+                        : null,
                   ),
                   alignment: Alignment.bottomLeft,
                   padding: const EdgeInsets.all(12),
-                  child: Text(item['name'] ?? 'Unknown', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    name,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: imageUrl != null ? Colors.white : null,
+                        ),
+                  ),
                 ),
               );
             },
