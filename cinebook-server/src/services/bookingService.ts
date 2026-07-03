@@ -167,7 +167,18 @@ export async function getUserBookings(userId: string) {
   logger.info('bookingService.getUserBookings', { userId });
   return prisma.booking.findMany({
     where: { userId },
-    include: { seats: true, payment: true },
+    include: { 
+      seats: true, 
+      payment: true,
+      show: {
+        include: {
+          movie: true,
+          screen: {
+            include: { theatre: true }
+          }
+        }
+      }
+    },
     orderBy: { createdAt: 'desc' },
   });
 }
