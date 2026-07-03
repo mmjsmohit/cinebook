@@ -15,6 +15,7 @@ dependencies:
   intl: ^0.20.3
   ag_ui: ^0.3.0
   flutter_gen_ai_chat_ui: ^2.14.0
+  flutter_animate: ^4.5.2
 
 dev_dependencies:
   flutter_test:
