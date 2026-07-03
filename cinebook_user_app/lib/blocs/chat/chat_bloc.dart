@@ -95,7 +95,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             id: uiEvent.toolCallId,
             user: aiUser,
             text: 'Loading ${uiEvent.toolCallName}...',
-          ).copyWith(customProperties: {'id': uiEvent.toolCallId}));
+          ));
         } else if (uiEvent is ToolCallResultEvent) {
           // Parse the JSON content
           Map<String, dynamic> resultData = {};
@@ -112,7 +112,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             resultKind: renderHint,
             data: resultData,
             createdAt: DateTime.now(),
-          ).copyWith(customProperties: {'id': uiEvent.toolCallId}));
+          ));
         } else if (uiEvent is StateSnapshotEvent) {
           emit(state.copyWith(bookingContext: uiEvent.snapshot));
         } else if (uiEvent is RunFinishedEvent) {
